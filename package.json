@@ -1,0 +1,79 @@
+{
+  "name": "aws-testing-framework",
+  "version": "0.1.0",
+  "description": "A BDD framework for testing AWS services and their interactions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "test": "cucumber-js",
+    "test:coverage": "cucumber-js && npm run generate-report",
+    "test:watch": "cucumber-js --watch",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "preversion": "npm test",
+    "version": "npm run build && git add -A dist",
+    "postversion": "git push && git push --tags",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check --write .",
+    "generate-report": "ts-node src/reporting/generateReport.ts cucumber-report.json",
+    "test:unit": "jest",
+    "test:unit:watch": "jest --watch",
+    "test:unit:coverage": "jest --coverage",
+    "test:mutation": "stryker run",
+    "docs:generate": "typedoc --out docs src",
+    "docs:build": "npm run docs:generate"
+  },
+  "keywords": [
+    "aws",
+    "testing",
+    "bdd",
+    "cucumber",
+    "typescript",
+    "s3",
+    "sqs",
+    "lambda",
+    "step-functions"
+  ],
+  "author": "sophiegle",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-sfn": "^3.0.0",
+    "@aws-sdk/client-sns": "^3.0.0",
+    "@aws-sdk/client-sqs": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@cucumber/cucumber": "^10.0.0",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
+    "@cucumber/cucumber": "^11.3.0",
+    "@stryker-mutator/core": "^9.0.1",
+    "@stryker-mutator/jest-runner": "^9.0.1",
+    "@types/cucumber": "^6.0.1",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^24.0.1",
+    "aws-sdk-client-mock": "^4.1.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.0.0",
+    "typedoc": "^0.28.5",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22.16.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/aws-testing-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/aws-testing-framework/issues"
+  },
+  "homepage": "https://github.com/yourusername/aws-testing-framework#readme"
+}
