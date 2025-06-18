@@ -189,6 +189,16 @@ npm run check
 
 MIT License - see LICENSE file for details 
 
+## AWS Environment Setup for End-to-End Testing
+
+To use this framework for production-ready, end-to-end testing, your AWS environment must be configured as follows:
+
+1. **S3 Bucket Notification**: Your S3 bucket must be configured to send event notifications (e.g., ObjectCreated) to an SQS queue.
+2. **SQS Trigger for Lambda**: The SQS queue must be configured to trigger your Lambda function.
+3. **Lambda Permissions**: The Lambda function must have permission to start executions of your Step Function state machine.
+4. **Step Function**: The Step Function should be configured to process the input as expected from the Lambda.
+
+This framework does not simulate AWS events. It only observes and verifies the real event flow in your AWS environment. Ensure all resources and permissions are set up before running the tests.
 
 ## Problems to look at
 

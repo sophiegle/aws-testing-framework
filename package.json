@@ -4,7 +4,10 @@
   "description": "A BDD framework for testing AWS services and their interactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
@@ -40,6 +43,7 @@
   "author": "sophiegle",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.830.0",
     "@aws-sdk/client-lambda": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-sfn": "^3.0.0",
