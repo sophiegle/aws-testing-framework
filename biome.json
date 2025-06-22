@@ -26,7 +26,8 @@
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 80
+    "lineWidth": 80,
+    "ignore": ["dist/**", "coverage/**/*"]
   },
   "javascript": {
     "formatter": {

@@ -28,7 +28,7 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "format": "biome format --write .",
-    "format:check": "biome format --check .",
+    "format:check": "biome check .",
     "lint": "biome lint .",
     "type-check": "tsc --noEmit",
     "check": "biome check --write .",
