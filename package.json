@@ -1,6 +1,6 @@
 {
   "name": "aws-testing-framework",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A BDD framework for testing AWS services and their interactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,14 +14,18 @@
       "default": "./dist/cucumber.js"
     }
   },
-  "files": ["dist", "README.md", "docs"],
+  "files": [
+    "dist",
+    "README.md",
+    "docs"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
     "test:coverage": "cucumber-js && npm run generate-report",
     "test:watch": "cucumber-js --watch",
     "prepare": "npm run build",
-    "version": "npm run build && git add -A dist",
+    "version": "npm run build",
     "postversion": "git push && git push --tags",
     "format": "biome format --write .",
     "lint": "biome lint .",
