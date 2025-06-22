@@ -1,7 +1,7 @@
 {
   "name": "aws-testing-framework",
   "version": "0.1.5",
-  "description": "A BDD framework for testing AWS services and their interactions",
+  "description": "A comprehensive BDD framework for testing AWS serverless architectures with TypeScript and Cucumber. Supports S3, SQS, Lambda, Step Functions, and CloudWatch integration testing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -50,7 +50,15 @@
     "step-functions",
     "serverless",
     "integration-testing",
-    "end-to-end-testing"
+    "end-to-end-testing",
+    "cloudwatch",
+    "aws-sdk",
+    "test-framework",
+    "automation",
+    "ci-cd",
+    "monitoring",
+    "correlation",
+    "workflow-testing"
   ],
   "author": "sophiegle",
   "license": "MIT",
