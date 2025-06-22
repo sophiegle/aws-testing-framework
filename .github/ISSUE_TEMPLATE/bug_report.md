@@ -1,36 +1,46 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: '[BUG] '
-labels: ['bug']
-assignees: ''
+title: ''
+labels: 'bug'
+assignees: 'sophiegle'
+
 ---
 
-## Bug Description
-
+**Describe the bug**
 A clear and concise description of what the bug is.
 
-## Steps to Reproduce
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Create feature file
+2. Run script ...
+3. See error
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-## Expected Behavior
-
+**Expected behavior**
 A clear and concise description of what you expected to happen.
 
-## Actual Behavior
+**Environment:**
+ - OS: [e.g. macOS, Windows, Linux]
+ - Node.js version: [e.g. 18.17.0]
+ - AWS Testing Framework version: [e.g. 0.1.5]
+ - AWS region: [e.g. eu-west-2]
 
-A clear and concise description of what actually happened.
+**Additional context**
+Add any other context about the problem here.
 
-## Environment
+**Code example**
+If applicable, add a code example to help explain your problem:
 
-- **Framework Version**: [e.g. 0.1.0]
-- **Node.js Version**: [e.g. 22.16.0]
-- **AWS Region**: [e.g. us-east-1]
-- **Operating System**: [e.g. macOS, Ubuntu, Windows]
+```typescript
+// Your code here
+```
+
+**Error logs**
+If applicable, add error logs or stack traces:
+
+```
+Error: ...
+```
 
 ## AWS Services Used
 
