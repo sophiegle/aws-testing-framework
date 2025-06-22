@@ -101,7 +101,9 @@ describe('AWSTestingFramework', () => {
 
       const queueUrl = await framework.createQueue(queueName);
 
-      expect(queueUrl).toBe('https://sqs.us-east-1.amazonaws.com/123456789012/test-queue');
+      expect(queueUrl).toBe(
+        'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue'
+      );
       expect(sqsMock.calls()).toHaveLength(1);
       expect(sqsMock.calls()[0].args[0].input).toEqual({
         QueueName: queueName,
@@ -109,7 +111,8 @@ describe('AWSTestingFramework', () => {
     });
 
     it('should send a message to a queue', async () => {
-      const queueUrl = 'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue';
+      const queueUrl =
+        'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue';
       const message = 'test message';
       sqsMock.on(SendMessageCommand).resolves({
         MessageId: 'test-message-id',
@@ -125,7 +128,8 @@ describe('AWSTestingFramework', () => {
     });
 
     it('should receive messages from a queue', async () => {
-      const queueUrl = 'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue';
+      const queueUrl =
+        'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue';
       const mockMessages = [
         {
           MessageId: 'test-message-id',
@@ -154,7 +158,8 @@ describe('AWSTestingFramework', () => {
       const functionName = 'test-function';
       const handler = 'index.handler';
       lambdaMock.on(CreateFunctionCommand).resolves({
-        FunctionArn: 'arn:aws:lambda:us-east-1:123456789012:function:test-function',
+        FunctionArn:
+          'arn:aws:lambda:us-east-1:123456789012:function:test-function',
       });
 
       await framework.createFunction(functionName, handler);
@@ -190,14 +195,16 @@ describe('AWSTestingFramework', () => {
       expect(lambdaMock.calls()).toHaveLength(1);
 
       // Get the actual input from the mock call and cast to InvokeCommandInput
-      const actualInput = lambdaMock.calls()[0].args[0].input as InvokeCommandInput;
+      const actualInput = lambdaMock.calls()[0].args[0]
+        .input as InvokeCommandInput;
       expect(actualInput.FunctionName).toBe(functionName);
 
       // Compare the payload contents as strings
-      const expectedPayload = Uint8ArrayBlobAdapter.from(JSON.stringify(payload));
-      expect(Buffer.from(actualInput.Payload as unknown as Uint8Array).toString()).toBe(
-        Buffer.from(expectedPayload as unknown as Uint8Array).toString()
-      );
+      const expectedPayloadString = JSON.stringify(payload);
+      const actualPayloadString = Buffer.from(
+        actualInput.Payload as unknown as Uint8Array
+      ).toString();
+      expect(actualPayloadString).toBe(expectedPayloadString);
     });
   });
 
@@ -205,7 +212,8 @@ describe('AWSTestingFramework', () => {
     it('should create a state machine', async () => {
       const name = 'test-state-machine';
       sfnMock.on(CreateStateMachineCommand).resolves({
-        stateMachineArn: 'arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine',
+        stateMachineArn:
+          'arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine',
       });
 
       const stateMachineArn = await framework.createStateMachine(name);
@@ -230,7 +238,10 @@ describe('AWSTestingFramework', () => {
           'arn:aws:states:us-east-1:123456789012:execution:test-state-machine:test-execution',
       });
 
-      const executionArn = await framework.startExecution(stateMachineArn, input);
+      const executionArn = await framework.startExecution(
+        stateMachineArn,
+        input
+      );
 
       expect(executionArn).toBe(
         'arn:aws:states:us-east-1:123456789012:execution:test-state-machine:test-execution'

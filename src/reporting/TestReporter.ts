@@ -59,7 +59,8 @@ export class TestReporter {
     if (!this.currentFeature) {
       throw new Error('No feature started');
     }
-    const currentScenario = this.currentFeature.scenarios[this.currentFeature.scenarios.length - 1];
+    const currentScenario =
+      this.currentFeature.scenarios[this.currentFeature.scenarios.length - 1];
     if (!currentScenario) {
       throw new Error('No scenario started');
     }
@@ -75,7 +76,8 @@ export class TestReporter {
     if (!this.currentFeature) {
       throw new Error('No feature started');
     }
-    const currentScenario = this.currentFeature.scenarios[this.currentFeature.scenarios.length - 1];
+    const currentScenario =
+      this.currentFeature.scenarios[this.currentFeature.scenarios.length - 1];
     if (!currentScenario) {
       throw new Error('No scenario started');
     }
@@ -89,17 +91,22 @@ export class TestReporter {
     // Write JSON report
     const jsonReport = {
       summary: {
-        total: this.results.reduce((acc, feature) => acc + feature.scenarios.length, 0),
+        total: this.results.reduce(
+          (acc, feature) => acc + feature.scenarios.length,
+          0
+        ),
         passed: this.results.reduce(
           (acc, feature) =>
             acc +
-            feature.scenarios.filter((scenario) => scenario.status === 'passed').length,
+            feature.scenarios.filter((scenario) => scenario.status === 'passed')
+              .length,
           0
         ),
         failed: this.results.reduce(
           (acc, feature) =>
             acc +
-            feature.scenarios.filter((scenario) => scenario.status === 'failed').length,
+            feature.scenarios.filter((scenario) => scenario.status === 'failed')
+              .length,
           0
         ),
       },

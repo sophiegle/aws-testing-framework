@@ -77,6 +77,7 @@ describe('generateReport', () => {
                   name: 'Test Step',
                   status: 'failed',
                   duration: 100,
+                  error: 'Test error message',
                 },
               ],
             },
@@ -85,7 +86,7 @@ describe('generateReport', () => {
       ];
 
       const html = generateHtmlReport(mockReport);
-      expect(html).toContain('Test error');
+      expect(html).toContain('Test error message');
     });
 
     it('should calculate correct summary statistics', () => {
@@ -143,42 +144,47 @@ describe('generateReport', () => {
   });
 
   describe('file operations', () => {
-    it('should create test-reports directory if it does not exist', () => {
+    it('should create coverage/functional-tests directory if it does not exist', () => {
       (existsSync as jest.Mock).mockReturnValue(false);
       main();
-      expect(mkdirSync).toHaveBeenCalledWith('test-reports', { recursive: true });
+      expect(mkdirSync).toHaveBeenCalledWith('coverage/functional-tests', {
+        recursive: true,
+      });
     });
 
     it('should handle missing report file', () => {
       (existsSync as jest.Mock).mockReturnValue(false);
       main();
       expect(console.error).toHaveBeenCalledWith(
-        'Error: No test report found. Please run the tests first.'
+        'Error: No test report found at',
+        'coverage/functional-tests/cucumber-report.json'
       );
       expect(process.exit).toHaveBeenCalledWith(1);
     });
 
     it('should generate and write HTML report successfully', () => {
-      const mockReport = {
-        features: [
-          {
-            feature: 'Test Feature',
-            scenarios: [
-              {
-                name: 'Test Scenario',
-                status: 'passed',
-                steps: [
-                  {
-                    name: 'Test Step',
+      const mockReport = [
+        {
+          keyword: 'Feature',
+          name: 'Test Feature',
+          elements: [
+            {
+              keyword: 'Scenario',
+              name: 'Test Scenario',
+              steps: [
+                {
+                  keyword: 'Given',
+                  name: 'Test Step',
+                  result: {
                     status: 'passed',
                     duration: 100,
                   },
-                ],
-              },
-            ],
-          },
-        ],
-      };
+                },
+              ],
+            },
+          ],
+        },
+      ];
 
       (existsSync as jest.Mock).mockReturnValue(true);
       (readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockReport));
@@ -186,11 +192,11 @@ describe('generateReport', () => {
       main();
 
       expect(writeFileSync).toHaveBeenCalledWith(
-        'test-reports/report.html',
+        'coverage/functional-tests/report.html',
         expect.stringContaining('Test Feature')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        'HTML report generated successfully at test-reports/report.html'
+        'HTML report generated successfully at coverage/functional-tests/report.html'
       );
     });
   });

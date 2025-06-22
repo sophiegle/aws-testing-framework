@@ -1,6 +1,6 @@
+import { EventEmitter } from 'node:events';
 import * as fs from 'node:fs';
 import path from 'node:path';
-import { EventEmitter } from 'node:events';
 import type { IFormatterOptions } from '@cucumber/cucumber';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { TestReporter } from '../../reporting/TestReporter';
@@ -57,7 +57,9 @@ describe('TestReporter', () => {
     it('should add feature to results', () => {
       const feature: TestFeature = { name: 'Test Feature' };
       reporter.onFeatureStarted(feature);
-      const results = (reporter as unknown as { results: TestReporterResults[] }).results;
+      const results = (
+        reporter as unknown as { results: TestReporterResults[] }
+      ).results;
       expect(results).toHaveLength(1);
       expect(results[0].feature).toBe('Test Feature');
     });
@@ -70,7 +72,9 @@ describe('TestReporter', () => {
       reporter.onFeatureStarted(feature);
       reporter.onScenarioStarted(scenario);
 
-      const results = (reporter as unknown as { results: TestReporterResults[] }).results;
+      const results = (
+        reporter as unknown as { results: TestReporterResults[] }
+      ).results;
       expect(results[0].scenarios).toHaveLength(1);
       expect(results[0].scenarios[0].name).toBe('Test Scenario');
       expect(results[0].scenarios[0].status).toBe('skipped');
@@ -88,7 +92,9 @@ describe('TestReporter', () => {
       reporter.onScenarioStarted(scenario);
       reporter.onStepFinished(step, result);
 
-      const results = (reporter as unknown as { results: TestReporterResults[] }).results;
+      const results = (
+        reporter as unknown as { results: TestReporterResults[] }
+      ).results;
       expect(results[0].scenarios[0].steps).toHaveLength(1);
       expect(results[0].scenarios[0].steps[0].name).toBe('test step');
       expect(results[0].scenarios[0].steps[0].status).toBe('passed');
@@ -140,7 +146,9 @@ describe('TestReporter', () => {
             parameterTypeByName: new Map(),
             parameterTypes: {
               next: () => ({ done: true, value: undefined }),
-              [Symbol.iterator]: function () { return this; }
+              [Symbol.iterator]: function () {
+                return this;
+              },
             },
             parameterTypesByRegexp: new Map(),
             defineParameterType: jest.fn(),
@@ -171,7 +179,9 @@ describe('TestReporter', () => {
 
       reporter.onTestRunFinished(formatterOptions);
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith('test-reports', { recursive: true });
+      expect(fs.mkdirSync).toHaveBeenCalledWith('test-reports', {
+        recursive: true,
+      });
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         'test-reports/cucumber-report.json',
         expect.stringContaining('Test Feature')

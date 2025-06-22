@@ -21,7 +21,10 @@ export default class CustomFormatter extends Formatter {
     this.reporter.onScenarioStarted(scenario);
   }
 
-  onScenarioFinished(scenario: { name: string }, result: { status: string; duration: number }) {
+  onScenarioFinished(
+    scenario: { name: string },
+    result: { status: string; duration: number }
+  ) {
     this.reporter.onScenarioFinished(scenario, result);
   }
 

@@ -27,7 +27,9 @@ describe('CustomFormatter', () => {
     // parameterTypes iterator mock
     const parameterTypesIterator = {
       next: () => ({ done: true, value: undefined }),
-      [Symbol.iterator]: function () { return this; }
+      [Symbol.iterator]: function () {
+        return this;
+      },
     };
 
     // Create mock support code library
@@ -132,6 +134,9 @@ describe('CustomFormatter', () => {
     const scenario = { name: 'Test Scenario' };
     const result = { status: 'passed', duration: 100 };
     formatter.onScenarioFinished(scenario, result);
-    expect(mockReporter.onScenarioFinished).toHaveBeenCalledWith(scenario, result);
+    expect(mockReporter.onScenarioFinished).toHaveBeenCalledWith(
+      scenario,
+      result
+    );
   });
 });

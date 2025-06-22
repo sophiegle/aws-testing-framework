@@ -37,7 +37,9 @@ interface TestReporterResults {
   }>;
 }
 
-function convertCucumberReportToResults(report: CucumberFeature[]): TestReporterResults[] {
+function convertCucumberReportToResults(
+  report: CucumberFeature[]
+): TestReporterResults[] {
   return report.map((feature) => ({
     feature: feature.name,
     scenarios: feature.elements.map((scenario) => ({
@@ -45,8 +47,8 @@ function convertCucumberReportToResults(report: CucumberFeature[]): TestReporter
       status: scenario.steps.every((step) => step.result.status === 'passed')
         ? 'passed'
         : scenario.steps.some((step) => step.result.status === 'failed')
-        ? 'failed'
-        : 'pending',
+          ? 'failed'
+          : 'pending',
       steps: scenario.steps.map((step) => ({
         name: `${step.keyword} ${step.name}`,
         status: step.result.status,
@@ -85,15 +87,22 @@ export function generateHtmlReport(results: TestReporterResults[]): string {
     `;
   }
 
-  const totalScenarios = results.reduce((acc, feature) => acc + feature.scenarios.length, 0);
+  const totalScenarios = results.reduce(
+    (acc, feature) => acc + feature.scenarios.length,
+    0
+  );
   const passedScenarios = results.reduce(
     (acc, feature) =>
-      acc + feature.scenarios.filter((scenario) => scenario.status === 'passed').length,
+      acc +
+      feature.scenarios.filter((scenario) => scenario.status === 'passed')
+        .length,
     0
   );
   const failedScenarios = results.reduce(
     (acc, feature) =>
-      acc + feature.scenarios.filter((scenario) => scenario.status === 'failed').length,
+      acc +
+      feature.scenarios.filter((scenario) => scenario.status === 'failed')
+        .length,
     0
   );
 
@@ -174,17 +183,18 @@ export function main() {
 
   try {
     const reportContent = readFileSync(reportPath, 'utf8');
-    console.log('Reading report from:', reportPath);
-    
+
     const report = JSON.parse(reportContent) as CucumberFeature[];
     if (!Array.isArray(report)) {
       throw new Error('Invalid report format: expected an array of features');
     }
-    
+
     const results = convertCucumberReportToResults(report);
     const htmlReport = generateHtmlReport(results);
     writeFileSync(join('coverage/functional-tests', 'report.html'), htmlReport);
-    console.info('HTML report generated successfully at coverage/functional-tests/report.html');
+    console.info(
+      'HTML report generated successfully at coverage/functional-tests/report.html'
+    );
   } catch (error) {
     console.error('Error generating report:', error);
     process.exit(1);

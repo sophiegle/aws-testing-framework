@@ -4,10 +4,7 @@
   "description": "A BDD framework for testing AWS services and their interactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md", "docs"],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
@@ -27,7 +24,9 @@
     "test:unit:coverage": "jest --coverage",
     "test:mutation": "stryker run",
     "docs:generate": "typedoc --out docs src",
-    "docs:build": "npm run docs:generate"
+    "docs:build": "npm run docs:generate",
+    "clean": "rm -rf dist coverage reports",
+    "prepack": "npm run build"
   },
   "keywords": [
     "aws",
@@ -38,7 +37,10 @@
     "s3",
     "sqs",
     "lambda",
-    "step-functions"
+    "step-functions",
+    "serverless",
+    "integration-testing",
+    "end-to-end-testing"
   ],
   "author": "sophiegle",
   "license": "MIT",
@@ -74,10 +76,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/aws-testing-framework.git"
+    "url": "git+https://github.com/sophiegle/aws-testing-framework.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/aws-testing-framework/issues"
+    "url": "https://github.com/sophiegle/aws-testing-framework/issues"
   },
-  "homepage": "https://github.com/yourusername/aws-testing-framework#readme"
+  "homepage": "https://github.com/sophiegle/aws-testing-framework#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

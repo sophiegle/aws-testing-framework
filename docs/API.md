@@ -1,245 +1,388 @@
-# AWS Testing Framework API Documentation
+# API Documentation
 
-## Core Classes
+This document provides detailed information about the AWS Testing Framework API.
 
-### AWSTestingFramework
+## Core Framework
 
-The main class for interacting with AWS services and managing test execution.
+### `AWSTestingFramework`
+
+The main framework class that provides all AWS service interactions.
 
 ```typescript
 import { AWSTestingFramework } from 'aws-testing-framework';
 
-const framework = new AWSTestingFramework({
-  region: 'us-east-1',
-  timeout: 30000,
-  retryAttempts: 3
-});
+const framework = new AWSTestingFramework();
 ```
 
 #### Constructor Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| region | string | 'us-east-1' | AWS region to use |
-| timeout | number | 30000 | Default timeout in milliseconds |
-| retryAttempts | number | 3 | Number of retry attempts for operations |
-
-#### Methods
-
-##### S3 Operations
-
 ```typescript
-// Create an S3 bucket
-await framework.createBucket(bucketName: string): Promise<void>
+interface FrameworkOptions {
+  region?: string;
+  timeout?: number;
+  retryAttempts?: number;
+  correlationIdPrefix?: string;
+}
 
-// Upload a file to S3
-await framework.uploadFile(fileName: string, content?: string): Promise<void>
-
-// Check if a file exists in S3
-await framework.checkFileExists(fileName: string): Promise<boolean>
-
-// Delete a file from S3
-await framework.deleteFile(fileName: string): Promise<void>
-```
-
-##### SQS Operations
-
-```typescript
-// Create an SQS queue
-await framework.createQueue(queueName: string): Promise<string>
-
-// Send a message to SQS
-await framework.sendMessage(queueUrl: string, message: string): Promise<void>
-
-// Receive messages from SQS
-await framework.receiveMessages(queueUrl: string): Promise<Message[]>
-
-// Delete a message from SQS
-await framework.deleteMessage(queueUrl: string, receiptHandle: string): Promise<void>
-```
-
-##### Lambda Operations
-
-```typescript
-// Create a Lambda function
-await framework.createFunction(
-  functionName: string,
-  handler: string,
-  code: Buffer
-): Promise<void>
-
-// Invoke a Lambda function
-await framework.invokeFunction(
-  functionName: string,
-  payload: any
-): Promise<any>
-
-// Verify Lambda invocation
-await framework.verifyLambdaInvocation(
-  functionName: string,
-  timeout?: number
-): Promise<boolean>
-```
-
-##### Step Functions Operations
-
-```typescript
-// Create a state machine
-await framework.createStateMachine(
-  name: string,
-  definition: string
-): Promise<string>
-
-// Start an execution
-await framework.startExecution(
-  stateMachineArn: string,
-  input: any
-): Promise<string>
-
-// Get execution status
-await framework.getExecutionStatus(
-  executionArn: string
-): Promise<string>
-```
-
-### TestReporter
-
-Class for generating test reports.
-
-```typescript
-import { TestReporter } from 'aws-testing-framework';
-
-const reporter = new TestReporter({
-  outputDir: 'test-reports'
+const framework = new AWSTestingFramework({
+  region: 'us-east-1',
+  timeout: 30000,
+  retryAttempts: 3,
+  correlationIdPrefix: 'test'
 });
 ```
 
-#### Methods
+## S3 Operations
+
+### `findBucket(bucketName: string): Promise<void>`
+
+Verifies that an S3 bucket exists.
 
 ```typescript
-// Start tracking a feature
-reporter.startFeature(feature: Feature): void
-
-// Start tracking a scenario
-reporter.startScenario(scenario: Scenario): void
-
-// Record a step result
-reporter.recordStep(step: Step, result: StepResult): void
-
-// Generate reports
-reporter.generateReports(): Promise<void>
+await framework.findBucket('my-bucket');
 ```
 
-## Step Definitions
+### `uploadFile(bucketName: string, fileName: string, content: string): Promise<void>`
 
-### Base Steps
-
-The framework provides pre-defined step definitions for common AWS operations.
+Uploads a file to S3.
 
 ```typescript
-import { Given, When, Then } from '@cucumber/cucumber';
-import { AWSTestingFramework } from 'aws-testing-framework';
-
-const framework = new AWSTestingFramework();
-
-// S3 Steps
-Given('I have an S3 bucket named {string}', async function(bucketName: string) {
-  await framework.createBucket(bucketName);
-});
-
-// SQS Steps
-Given('I have an SQS queue named {string}', async function(queueName: string) {
-  await framework.createQueue(queueName);
-});
-
-// Lambda Steps
-Given('I have a Lambda function named {string}', async function(functionName: string) {
-  await framework.createFunction(functionName, 'index.handler', code);
-});
-
-// Step Functions Steps
-Given('I have a state machine named {string}', async function(name: string) {
-  await framework.createStateMachine(name, definition);
-});
+await framework.uploadFile('my-bucket', 'test.txt', 'Hello World');
 ```
 
-## Custom Formatter
+### `uploadFileWithTracking(bucketName: string, fileName: string, content: string, correlationId: string): Promise<void>`
 
-The framework includes a custom Cucumber formatter for generating test reports.
+Uploads a file with correlation ID tracking for end-to-end testing.
 
 ```typescript
-import { CustomFormatter } from 'aws-testing-framework';
+await framework.uploadFileWithTracking('my-bucket', 'test.txt', 'Hello World', 'test-123');
+```
 
-const formatter = new CustomFormatter({
-  outputDir: 'test-reports'
+### `checkFileExists(bucketName: string, fileName: string): Promise<boolean>`
+
+Checks if a file exists in S3.
+
+```typescript
+const exists = await framework.checkFileExists('my-bucket', 'test.txt');
+```
+
+## SQS Operations
+
+### `findQueue(queueName: string): Promise<string>`
+
+Finds an SQS queue by name and returns the queue URL.
+
+```typescript
+const queueUrl = await framework.findQueue('my-queue');
+```
+
+### `sendMessage(queueUrl: string, message: string): Promise<void>`
+
+Sends a message to an SQS queue.
+
+```typescript
+await framework.sendMessage(queueUrl, 'Hello from SQS');
+```
+
+### `getUnreadMessageCount(queueUrl: string): Promise<number>`
+
+Gets the number of unread messages in a queue.
+
+```typescript
+const count = await framework.getUnreadMessageCount(queueUrl);
+```
+
+## Lambda Operations
+
+### `findFunction(functionName: string): Promise<void>`
+
+Verifies that a Lambda function exists.
+
+```typescript
+await framework.findFunction('my-function');
+```
+
+### `invokeFunction(functionName: string, payload: any): Promise<any>`
+
+Invokes a Lambda function with a payload.
+
+```typescript
+const result = await framework.invokeFunction('my-function', { key: 'value' });
+```
+
+### `checkLambdaExecution(functionName: string): Promise<boolean>`
+
+Checks if a Lambda function has been executed recently.
+
+```typescript
+const executed = await framework.checkLambdaExecution('my-function');
+```
+
+### `trackLambdaExecution(functionName: string, correlationId: string): Promise<boolean>`
+
+Tracks Lambda execution using correlation ID.
+
+```typescript
+const tracked = await framework.trackLambdaExecution('my-function', 'test-123');
+```
+
+## Step Function Operations
+
+### `findStateMachine(stateMachineName: string): Promise<string>`
+
+Finds a Step Function state machine by name and returns the ARN.
+
+```typescript
+const stateMachineArn = await framework.findStateMachine('my-pipeline');
+```
+
+### `startExecution(stateMachineArn: string, input: any): Promise<string>`
+
+Starts a Step Function execution.
+
+```typescript
+const executionArn = await framework.startExecution(stateMachineArn, { key: 'value' });
+```
+
+### `checkStateMachineExecution(stateMachineName: string): Promise<boolean>`
+
+Checks if a Step Function has been executed recently.
+
+```typescript
+const executed = await framework.checkStateMachineExecution('my-pipeline');
+```
+
+### `trackStepFunctionExecution(stateMachineName: string, correlationId: string): Promise<boolean>`
+
+Tracks Step Function execution using correlation ID.
+
+```typescript
+const tracked = await framework.trackStepFunctionExecution('my-pipeline', 'test-123');
+```
+
+### `getExecutionStatus(executionArn: string): Promise<string>`
+
+Gets the status of a Step Function execution.
+
+```typescript
+const status = await framework.getExecutionStatus(executionArn);
+```
+
+## Correlation and Tracking
+
+### `generateCorrelationId(): string`
+
+Generates a unique correlation ID for tracking data flow.
+
+```typescript
+const correlationId = framework.generateCorrelationId();
+```
+
+### `getWorkflowTrace(correlationId: string): WorkflowTrace | undefined`
+
+Gets the workflow trace for a correlation ID.
+
+```typescript
+const trace = framework.getWorkflowTrace('test-123');
+```
+
+### `traceFileThroughWorkflow(fileName: string, correlationId: string): Promise<boolean>`
+
+Traces a file through the entire workflow.
+
+```typescript
+const traced = await framework.traceFileThroughWorkflow('test.txt', 'test-123');
+```
+
+## Monitoring and Verification
+
+### CloudWatch Logs
+
+#### `getLambdaLogs(functionName: string, startTime: Date, endTime: Date, filterPattern?: string): Promise<LogEvent[]>`
+
+Retrieves Lambda function logs from CloudWatch.
+
+```typescript
+const logs = await framework.getLambdaLogs('my-function', startTime, endTime, 'ERROR');
+```
+
+#### `verifyLambdaLogsContain(functionName: string, startTime: Date, endTime: Date, patterns: string[]): Promise<LogVerificationResult>`
+
+Verifies that Lambda logs contain specific patterns.
+
+```typescript
+const result = await framework.verifyLambdaLogsContain('my-function', startTime, endTime, ['Processing file']);
+```
+
+#### `checkLambdaLogErrors(functionName: string, startTime: Date, endTime: Date): Promise<ErrorCheckResult>`
+
+Checks for errors in Lambda logs.
+
+```typescript
+const result = await framework.checkLambdaLogErrors('my-function', startTime, endTime);
+```
+
+#### `getLambdaExecutionMetrics(functionName: string, startTime: Date, endTime: Date): Promise<ExecutionMetrics>`
+
+Gets Lambda execution metrics from logs.
+
+```typescript
+const metrics = await framework.getLambdaExecutionMetrics('my-function', startTime, endTime);
+```
+
+### Step Function Monitoring
+
+#### `getStepFunctionStateOutput(executionArn: string, stateName?: string): Promise<StateOutput[]>`
+
+Gets Step Function state outputs.
+
+```typescript
+const outputs = await framework.getStepFunctionStateOutput(executionArn, 'ProcessData');
+```
+
+#### `verifyStepFunctionStateOutput(executionArn: string, stateName: string, expectedOutput: any): Promise<StateOutputVerification>`
+
+Verifies Step Function state output.
+
+```typescript
+const result = await framework.verifyStepFunctionStateOutput(executionArn, 'ProcessData', { status: 'success' });
+```
+
+#### `getStepFunctionDataFlow(executionArn: string): Promise<DataFlowResult>`
+
+Analyzes data flow between Step Function states.
+
+```typescript
+const dataFlow = await framework.getStepFunctionDataFlow(executionArn);
+```
+
+#### `verifyStepFunctionSLAs(executionArn: string, slas: SLADefinition): Promise<SLAVerification>`
+
+Verifies Step Function performance SLAs.
+
+```typescript
+const result = await framework.verifyStepFunctionSLAs(executionArn, {
+  maxTotalExecutionTime: 60000,
+  maxStateExecutionTime: 10000
 });
 ```
 
-## Types
+## Utility Methods
 
-### StepContext
+### `waitForCondition(condition: () => Promise<boolean>, timeout?: number): Promise<void>`
 
-Interface for step definition context.
+Waits for a condition to be true.
+
+```typescript
+await framework.waitForCondition(async () => {
+  return await framework.checkFileExists('my-bucket', 'test.txt');
+}, 30000);
+```
+
+### `checkLambdaErrors(functionName: string, timeWindowMinutes: number): Promise<boolean>`
+
+Checks for Lambda errors in a time window.
+
+```typescript
+const hasErrors = await framework.checkLambdaErrors('my-function', 10);
+```
+
+### `verifyLambdaExecutionTime(functionName: string, maxExecutionTimeMs: number): Promise<boolean>`
+
+Verifies Lambda execution time.
+
+```typescript
+const withinLimit = await framework.verifyLambdaExecutionTime('my-function', 5000);
+```
+
+### `verifyLambdaConfiguration(functionName: string): Promise<ConfigurationResult>`
+
+Verifies Lambda function configuration.
+
+```typescript
+const config = await framework.verifyLambdaConfiguration('my-function');
+```
+
+## Types and Interfaces
+
+### `StepContext`
+
+Context object passed to step definitions.
 
 ```typescript
 interface StepContext {
-  framework: AWSTestingFramework;
   bucketName?: string;
+  queueName?: string;
   queueUrl?: string;
   functionName?: string;
+  stateMachineName?: string;
   stateMachineArn?: string;
   executionArn?: string;
+  correlationId?: string;
+  uploadedFileName?: string;
+  uploadedFileContent?: string;
+  expectedStateMachineName?: string;
 }
 ```
 
-### TestResult
+### `WorkflowTrace`
 
-Interface for test execution results.
+Trace information for a workflow execution.
 
 ```typescript
-interface TestResult {
-  status: 'passed' | 'failed' | 'skipped';
-  duration: number;
-  error?: Error;
+interface WorkflowTrace {
+  correlationId: string;
+  s3Event?: S3Event;
+  sqsMessage?: SQSMessage;
+  lambdaExecution?: LambdaExecution;
+  stepFunctionExecution?: StepFunctionExecution;
+}
+```
+
+### `LogEvent`
+
+CloudWatch log event.
+
+```typescript
+interface LogEvent {
+  timestamp: Date;
+  message: string;
+  logStreamName: string;
+  eventId: string;
+}
+```
+
+### `ExecutionMetrics`
+
+Lambda execution metrics.
+
+```typescript
+interface ExecutionMetrics {
+  executionCount: number;
+  averageDuration: number;
+  maxDuration: number;
+  minDuration: number;
+  coldStarts: number;
+  errors: number;
 }
 ```
 
 ## Error Handling
 
-The framework provides custom error classes for different types of failures:
+The framework throws descriptive errors for common issues:
 
 ```typescript
-class AWSTestingFrameworkError extends Error {
-  constructor(message: string, public readonly code: string) {
-    super(message);
-  }
-}
-
-class ResourceNotFoundError extends AWSTestingFrameworkError {
-  constructor(resourceType: string, resourceName: string) {
-    super(
-      `${resourceType} '${resourceName}' not found`,
-      'RESOURCE_NOT_FOUND'
-    );
-  }
-}
-
-class TimeoutError extends AWSTestingFrameworkError {
-  constructor(operation: string, timeout: number) {
-    super(
-      `Operation '${operation}' timed out after ${timeout}ms`,
-      'TIMEOUT'
-    );
-  }
+try {
+  await framework.findBucket('non-existent-bucket');
+} catch (error) {
+  console.error('Bucket not found:', error.message);
 }
 ```
 
 ## Best Practices
 
-1. Always use the provided step definitions when possible
-2. Handle AWS service errors appropriately
-3. Clean up resources after tests
-4. Use appropriate timeouts for long-running operations
-5. Implement proper error handling in custom steps
-6. Follow the BDD pattern for test organization
-7. Use the test reporter for consistent reporting 
+1. **Use correlation IDs** for end-to-end testing
+2. **Set appropriate timeouts** for your environment
+3. **Handle errors gracefully** in your step definitions
+4. **Use environment variables** for configuration
+5. **Clean up test data** after tests complete 
