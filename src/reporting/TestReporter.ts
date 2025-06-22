@@ -2,24 +2,24 @@ import * as fs from 'node:fs';
 import { join } from 'node:path';
 import { generateHtmlReport } from './generateReport';
 
-interface TestFeature {
+export interface TestFeature {
   name: string;
 }
 
-interface TestScenario {
+export interface TestScenario {
   name: string;
 }
 
-interface TestStep {
+export interface TestStep {
   text: string;
 }
 
-interface TestResult {
+export interface TestResult {
   status: string;
   duration: number;
 }
 
-interface TestReporterResults {
+export interface TestReporterResults {
   feature: string;
   scenarios: Array<{
     name: string;

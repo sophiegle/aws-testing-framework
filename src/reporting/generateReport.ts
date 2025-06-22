@@ -23,7 +23,7 @@ interface CucumberFeature {
   elements: CucumberScenario[];
 }
 
-interface TestReporterResults {
+export interface TestReporterResults {
   feature: string;
   scenarios: Array<{
     name: string;

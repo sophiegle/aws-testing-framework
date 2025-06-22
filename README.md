@@ -49,17 +49,12 @@ export AWS_REGION=us-east-1
 
 ### 2. Create Your First Test
 
-```gherkin
-# features/my-pipeline.feature
-Feature: My Data Pipeline
-  As a developer
-  I want to test my S3 to Lambda to Step Function pipeline
-  So that I can ensure data flows correctly
-
+```
+Feature: End-to-End Data Pipeline
   Scenario: Process uploaded file
-    Given I have an S3 bucket named "my-bucket"
-    And I have a Lambda function named "my-processor"
-    And I have a Step Function named "my-pipeline"
+    Given I have an S3 bucket named "test-bucket"
+    And I have a Lambda function named "test-processor"
+    And I have a Step Function named "test-pipeline"
     When I upload a file "test-data.json" with content "test-content" to the S3 bucket
     Then the Lambda function should be invoked
     And the Step Function should be executed
@@ -109,12 +104,8 @@ npm run test:all
 
 ## 📚 Documentation
 
-- **[Getting Started](docs/GETTING_STARTED.md)** - Complete setup and usage guide
-- **[API Documentation](docs/API.md)** - Detailed API reference
-- **[Configuration Guide](docs/CONFIGURATION.md)** - Framework configuration options
-- **[Testing Guide](docs/TESTING.md)** - Best practices for writing tests
-- **[Advanced Usage](docs/ADVANCED.md)** - Advanced features and techniques
-- **[Advanced Verification](docs/ADVANCED_VERIFICATION.md)** - Advanced monitoring and verification
+- **[GitHub Repository](https://github.com/sophiegle/aws-testing-framework)** - Source code and issues
+- **[Example Project](https://github.com/sophiegle/aws-testing-framework-test)** - Complete usage examples
 
 ## 🔧 Configuration
 
@@ -148,21 +139,22 @@ AWS_TESTING_CORRELATION_PREFIX=test
 
 ### Basic Pipeline Testing
 
-```gherkin
-Scenario: Test S3 to Lambda to Step Function pipeline
-  Given I have an S3 bucket named "test-bucket"
-  And I have a Lambda function named "test-processor"
-  And I have a Step Function named "test-pipeline"
-  When I upload a file "data.json" with content '{"key": "value"}' to the S3 bucket
-  Then the Lambda function should be invoked
-  And the Step Function should be executed
-  And I should be able to trace the file "data.json" through the entire pipeline
+```
+Feature: End-to-End Data Pipeline
+  Scenario: Process uploaded file
+    Given I have an S3 bucket named "test-bucket"
+    And I have a Lambda function named "test-processor"
+    And I have a Step Function named "test-pipeline"
+    When I upload a file "test-data.json" with content "test-content" to the S3 bucket
+    Then the Lambda function should be invoked
+    And the Step Function should be executed
+    And I should be able to trace the file "test-data.json" through the entire pipeline
 ```
 
 ### Advanced Monitoring
 
-```gherkin
-Scenario: Monitor pipeline performance and logs
+```
+Scenario: Verify comprehensive monitoring
   When I upload a file "test-data.json" to the S3 bucket
   Then the Lambda function logs should contain "Processing file"
   And the Lambda function logs should not contain errors
@@ -173,7 +165,7 @@ Scenario: Monitor pipeline performance and logs
 
 ### Error Handling
 
-```gherkin
+```
 Scenario: Handle processing errors gracefully
   When I upload a file "invalid-data.json" with content "invalid-json" to the S3 bucket
   Then the Lambda function logs should contain "Error processing file"
@@ -295,7 +287,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/sophiegle/aws-testing-framework/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/sophiegle/aws-testing-framework/discussions)
-- **Documentation**: [Full Documentation](docs/)
+- **Documentation**: [API Documentation](https://github.com/sophiegle/aws-testing-framework#readme)
 
 ## 🔒 Security
 
@@ -337,7 +329,7 @@ The framework organizes step definitions by functionality:
 
 ### Basic Data Pipeline Test
 
-```gherkin
+```
 Feature: End-to-End Data Pipeline
   Scenario: Process uploaded file
     Given I have an S3 bucket named "test-bucket"
@@ -351,7 +343,7 @@ Feature: End-to-End Data Pipeline
 
 ### Advanced Monitoring Test
 
-```gherkin
+```
 Scenario: Verify comprehensive monitoring
   When I upload a file "test-data.json" to the S3 bucket
   Then the Lambda function logs should contain "Processing file"

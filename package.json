@@ -14,7 +14,7 @@
       "default": "./dist/cucumber.js"
     }
   },
-  "files": ["dist", "README.md", "docs"],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
@@ -33,7 +33,7 @@
     "test:unit:watch": "jest --watch",
     "test:unit:coverage": "jest --coverage",
     "test:mutation": "stryker run",
-    "docs:generate": "typedoc --out docs src",
+    "docs:generate": "typedoc",
     "docs:build": "npm run docs:generate",
     "clean": "rm -rf dist coverage reports",
     "prepack": "npm run build"
