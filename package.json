@@ -1,6 +1,6 @@
 {
   "name": "aws-testing-framework",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A BDD framework for testing AWS services and their interactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
