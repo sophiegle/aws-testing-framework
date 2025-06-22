@@ -21,7 +21,6 @@
     "test:coverage": "cucumber-js && npm run generate-report",
     "test:watch": "cucumber-js --watch",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test",
     "preversion": "npm test",
     "version": "npm run build && git add -A dist",
     "postversion": "git push && git push --tags",

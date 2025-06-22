@@ -128,7 +128,6 @@ npm audit fix
 
 For security-related questions or concerns:
 
-- **Email**: [security@sophiegle.dev](mailto:security@sophiegle.dev)
 - **GitHub**: Create a private issue (for non-sensitive questions)
 - **Documentation**: Check our [Security Guide](docs/SECURITY.md)
 

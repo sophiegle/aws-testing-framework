@@ -333,15 +333,16 @@ We use [Semantic Versioning](https://semver.org/):
 
 ### Getting Help
 
-- **Issues**: Create GitHub issues for bugs or feature requests
-- **Discussions**: Use GitHub Discussions for questions
-- **Documentation**: Check our comprehensive documentation
+- **Issues**: [GitHub Issues](https://github.com/sophiegle/aws-testing-framework/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/sophiegle/aws-testing-framework/discussions)
+- **Documentation**: [Full Documentation](docs/)
+
+We're here to help you contribute successfully!
 
 ### Communication Channels
 
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: Questions and general discussion
-- **Email**: [contact@sophiegle.dev](mailto:contact@sophiegle.dev)
 
 ### Recognition
 

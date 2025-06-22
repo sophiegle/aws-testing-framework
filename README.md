@@ -270,14 +270,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: Check our comprehensive [documentation](docs/)
-- **Issues**: Create a [GitHub issue](https://github.com/sophiegle/aws-testing-framework/issues)
-- **Discussions**: Use [GitHub Discussions](https://github.com/sophiegle/aws-testing-framework/discussions)
-- **Email**: [contact@sophiegle.dev](mailto:contact@sophiegle.dev)
+- **Issues**: [GitHub Issues](https://github.com/sophiegle/aws-testing-framework/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/sophiegle/aws-testing-framework/discussions)
+- **Documentation**: [Full Documentation](docs/)
 
 ## 🔒 Security
 
-We take security seriously. Please report any security vulnerabilities to [security@sophiegle.dev](mailto:security@sophiegle.dev) instead of creating a public issue.
+We take security seriously. Please report any security vulnerabilities by creating a private issue or contacting us through GitHub.
 
 See our [Security Policy](SECURITY.md) for more details.
 
