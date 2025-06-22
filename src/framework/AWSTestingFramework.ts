@@ -613,7 +613,9 @@ export class AWSTestingFramework {
       const messageBody = JSON.parse(trace.sqsMessage.body);
       return (
         messageBody.Records?.some(
-          (record: Record<string, unknown>) => (record as { s3?: { object?: { key?: string } } }).s3?.object?.key === fileName
+          (record: Record<string, unknown>) =>
+            (record as { s3?: { object?: { key?: string } } }).s3?.object
+              ?.key === fileName
         ) || false
       );
     } catch (_error) {
@@ -1022,11 +1024,22 @@ export class AWSTestingFramework {
         response.events?.map((event) => ({
           timestamp: event.timestamp || new Date(),
           type: event.type || '',
-          stateName: typeof event.stateEnteredEventDetails?.name === 'string' ? event.stateEnteredEventDetails?.name : undefined,
-          stateEnteredEventDetails: event.stateEnteredEventDetails as Record<string, unknown> | undefined,
-          stateExitedEventDetails: event.stateExitedEventDetails as Record<string, unknown> | undefined,
-          taskSucceededEventDetails: event.taskSucceededEventDetails as Record<string, unknown> | undefined,
-          taskFailedEventDetails: event.taskFailedEventDetails as Record<string, unknown> | undefined,
+          stateName:
+            typeof event.stateEnteredEventDetails?.name === 'string'
+              ? event.stateEnteredEventDetails?.name
+              : undefined,
+          stateEnteredEventDetails: event.stateEnteredEventDetails as
+            | Record<string, unknown>
+            | undefined,
+          stateExitedEventDetails: event.stateExitedEventDetails as
+            | Record<string, unknown>
+            | undefined,
+          taskSucceededEventDetails: event.taskSucceededEventDetails as
+            | Record<string, unknown>
+            | undefined,
+          taskFailedEventDetails: event.taskFailedEventDetails as
+            | Record<string, unknown>
+            | undefined,
         })) || []
       );
     } catch (_error) {
@@ -1257,10 +1270,15 @@ export class AWSTestingFramework {
             (!stateName || stateEnteredEvent.name === stateName)
           ) {
             const stateOutput = {
-              stateName: typeof stateEnteredEvent.name === 'string' ? stateEnteredEvent.name : '',
-              input: typeof stateEnteredEvent.input === 'string' && stateEnteredEvent.input.trim() !== ''
-                ? JSON.parse(stateEnteredEvent.input)
-                : {},
+              stateName:
+                typeof stateEnteredEvent.name === 'string'
+                  ? stateEnteredEvent.name
+                  : '',
+              input:
+                typeof stateEnteredEvent.input === 'string' &&
+                stateEnteredEvent.input.trim() !== ''
+                  ? JSON.parse(stateEnteredEvent.input)
+                  : {},
               output: {},
               timestamp: event.timestamp,
               type: event.type,
@@ -1271,9 +1289,12 @@ export class AWSTestingFramework {
               (e) => e.type === 'TaskStateExited' || e.type === 'StateExited'
             );
             if (outputEvent?.stateExitedEventDetails) {
-              stateOutput.output = typeof outputEvent.stateExitedEventDetails.output === 'string' && outputEvent.stateExitedEventDetails.output.trim() !== ''
-                ? JSON.parse(outputEvent.stateExitedEventDetails.output)
-                : {};
+              stateOutput.output =
+                typeof outputEvent.stateExitedEventDetails.output ===
+                  'string' &&
+                outputEvent.stateExitedEventDetails.output.trim() !== ''
+                  ? JSON.parse(outputEvent.stateExitedEventDetails.output)
+                  : {};
             }
 
             stateOutputs.push(stateOutput);
@@ -1385,16 +1406,27 @@ export class AWSTestingFramework {
           currentEvent.type === 'StateExited' &&
           nextEvent.type === 'StateEntered'
         ) {
-          const fromState = typeof currentEvent.stateExitedEventDetails?.name === 'string' ? currentEvent.stateExitedEventDetails.name : '';
-          const toState = typeof nextEvent.stateEnteredEventDetails?.name === 'string' ? nextEvent.stateEnteredEventDetails.name : '';
+          const fromState =
+            typeof currentEvent.stateExitedEventDetails?.name === 'string'
+              ? currentEvent.stateExitedEventDetails.name
+              : '';
+          const toState =
+            typeof nextEvent.stateEnteredEventDetails?.name === 'string'
+              ? nextEvent.stateEnteredEventDetails.name
+              : '';
 
           if (fromState && toState) {
-            const fromOutput = typeof currentEvent.stateExitedEventDetails?.output === 'string' && currentEvent.stateExitedEventDetails.output.trim() !== ''
-              ? JSON.parse(currentEvent.stateExitedEventDetails.output)
-              : {};
-            const toInput = typeof nextEvent.stateEnteredEventDetails?.input === 'string' && nextEvent.stateEnteredEventDetails.input.trim() !== ''
-              ? JSON.parse(nextEvent.stateEnteredEventDetails.input)
-              : {};
+            const fromOutput =
+              typeof currentEvent.stateExitedEventDetails?.output ===
+                'string' &&
+              currentEvent.stateExitedEventDetails.output.trim() !== ''
+                ? JSON.parse(currentEvent.stateExitedEventDetails.output)
+                : {};
+            const toInput =
+              typeof nextEvent.stateEnteredEventDetails?.input === 'string' &&
+              nextEvent.stateEnteredEventDetails.input.trim() !== ''
+                ? JSON.parse(nextEvent.stateEnteredEventDetails.input)
+                : {};
 
             // Check for data loss
             if (

@@ -1,6 +1,10 @@
 // Core framework exports
 export { AWSTestingFramework } from './framework/AWSTestingFramework';
-export type { StepContext, ExecutionDetails, WorkflowTrace } from './framework/AWSTestingFramework';
+export type {
+  StepContext,
+  ExecutionDetails,
+  WorkflowTrace,
+} from './framework/AWSTestingFramework';
 
 // Re-export commonly used AWS types
 export type { S3Client } from '@aws-sdk/client-s3';

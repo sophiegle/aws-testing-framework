@@ -110,7 +110,10 @@ Then(
       );
     }
 
-    const containsFile = await framework.verifyStepFunctionContainsFile(this.correlationId, fileName);
+    const containsFile = await framework.verifyStepFunctionContainsFile(
+      this.correlationId,
+      fileName
+    );
     if (!containsFile) {
       throw new Error(
         `Step Function execution does not contain reference to file ${fileName}`
