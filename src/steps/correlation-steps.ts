@@ -3,7 +3,7 @@ import { AWSTestingFramework, type StepContext } from '../framework/AWSTestingFr
 
 const framework = new AWSTestingFramework();
 
-// Workflow setup and expectations
+// Cross-service setup and expectations
 Given(
   'I expect the Lambda function to trigger the Step Function named {string}',
   async function (this: StepContext, expectedStateMachineName: string) {
@@ -11,7 +11,7 @@ Given(
   }
 );
 
-// Workflow verification steps
+// Cross-service correlation verification steps
 Then(
   'the Lambda function should trigger the expected Step Function',
   async function (this: StepContext) {
@@ -52,7 +52,7 @@ Then(
 );
 
 Then(
-  'I should be able to trace the file {string} through the entire workflow',
+  'I should be able to trace the file {string} through the entire pipeline',
   async function (this: StepContext, fileName: string) {
     if (!this.correlationId) {
       throw new Error('Correlation ID is not set. Make sure to upload a file first.');
@@ -60,7 +60,7 @@ Then(
     
     const trace = await framework.traceFileThroughWorkflow(fileName, this.correlationId);
     if (!trace) {
-      throw new Error(`Could not trace file ${fileName} through the entire workflow`);
+      throw new Error(`Could not trace file ${fileName} through the entire pipeline`);
     }
   }
 );

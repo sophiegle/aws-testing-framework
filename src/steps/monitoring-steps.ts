@@ -3,7 +3,7 @@ import { AWSTestingFramework, type StepContext } from '../framework/AWSTestingFr
 
 const framework = new AWSTestingFramework();
 
-// CloudWatch Logs verification steps
+// CloudWatch Logs monitoring steps
 
 Then(
   'the Lambda function logs should contain {string}',
@@ -104,7 +104,7 @@ Then(
   }
 );
 
-// Step Function state output verification steps
+// Step Function state output monitoring steps
 
 Then(
   'the Step Function state {string} should have output containing {string}',

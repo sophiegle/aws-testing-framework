@@ -3,8 +3,8 @@ import './s3-steps';
 import './sqs-steps';
 import './lambda-steps';
 import './step-function-steps';
-import './workflow-steps';
-import './verification-steps';
+import './correlation-steps';
+import './monitoring-steps';
 
 // This file serves as the main entry point for all step definitions
 // Each service-specific file contains its own step definitions organized by AWS service

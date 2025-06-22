@@ -1,11 +1,11 @@
-Feature: Advanced AWS Service Verification
+Feature: Advanced AWS Service Monitoring
   As a DevOps engineer
   I want to verify detailed CloudWatch logs and Step Function state outputs
-  So that I can ensure comprehensive monitoring and data integrity in my serverless workflows
+  So that I can ensure comprehensive monitoring and data integrity in my serverless data pipelines
 
   Background:
     Given I have a Lambda function named "test-processor"
-    And I have a Step Function named "test-workflow"
+    And I have a Step Function named "test-pipeline"
     And I have an S3 bucket named "test-bucket"
     And I have an SQS queue named "test-queue"
 
@@ -23,7 +23,7 @@ Feature: Advanced AWS Service Verification
     And the Step Function should have no data loss or corruption
     And the Step Function should meet performance SLAs
 
-  Scenario: Verify comprehensive workflow monitoring
+  Scenario: Verify comprehensive pipeline monitoring
     When I upload a file "test-data.json" to the S3 bucket
     Then the Lambda function should be invoked
     And the Lambda function logs should contain "File processed successfully"

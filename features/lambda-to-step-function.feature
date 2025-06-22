@@ -1,7 +1,7 @@
 Feature: Lambda to Step Function Integration
   As a developer
-  I want to verify that my Lambda function triggers a specific Step Function
-  So that I can ensure my workflow integration works correctly
+  I want to test Lambda function integration with Step Functions
+  So that I can ensure my service integration works correctly
 
   Scenario: Lambda triggers specific Step Function
     Given I have a Lambda function named "afti-lambda-function"
