@@ -185,8 +185,28 @@ DEBUG=aws-testing-framework:* npx cucumber-js
 - Open an issue on GitHub
 - Check existing issues for solutions
 
+## Example Project
+
+For a complete, working example with multiple usage patterns, check out the **[aws-testing-framework-test](https://github.com/sophiegle/aws-testing-framework-test)** repository.
+
+This example project demonstrates:
+
+- **Built-in Methods** - Using framework's built-in step definitions
+- **Custom Steps** - Creating your own step definitions with business logic
+- **Extend Steps** - Overriding and extending built-in steps
+- **Feature-only** - Using built-in steps directly in feature files
+
+```bash
+# Clone and try the example project
+git clone https://github.com/sophiegle/aws-testing-framework-test.git
+cd aws-testing-framework-test
+npm install
+# Follow the setup instructions to configure your AWS resources
+npm run test:all
+```
+
 ## Next Steps
 
 - Read the [API Documentation](API.md) for detailed method descriptions
 - Explore [Advanced Usage](ADVANCED.md) for complex scenarios
-- Check out [Examples](../examples/) for real-world use cases 
+- Check out the [Example Project](https://github.com/sophiegle/aws-testing-framework-test) for real-world use cases 

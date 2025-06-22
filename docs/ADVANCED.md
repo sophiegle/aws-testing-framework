@@ -285,4 +285,34 @@ async function runLoadTest() {
 5. **Maintenance**
    - Keep dependencies updated
    - Document custom steps
-   - Regular test maintenance 
+   - Regular test maintenance
+
+## Real-World Examples
+
+For comprehensive, real-world examples of these advanced features, check out the **[aws-testing-framework-test](https://github.com/sophiegle/aws-testing-framework-test)** repository.
+
+This example project demonstrates:
+
+- **Custom Step Definitions** - Creating business-specific step definitions
+- **Extending Built-in Steps** - Overriding and enhancing framework functionality
+- **Complex Workflows** - Testing multi-service integrations
+- **Advanced Monitoring** - Custom validation and business logic
+- **Error Handling** - Graceful failure scenarios
+- **Performance Testing** - Load testing and metrics collection
+
+The example project includes working implementations of:
+- Custom notification workflows
+- Data processing pipelines
+- Extended validation and logging
+- Business rule verification
+- Error handling and recovery
+
+```bash
+# Explore the advanced examples
+git clone https://github.com/sophiegle/aws-testing-framework-test.git
+cd aws-testing-framework-test
+npm install
+# Follow the setup instructions to configure your AWS resources
+npm run test:custom-steps    # Custom business logic examples
+npm run test:extend-steps    # Extended framework examples
+``` 

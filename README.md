@@ -7,6 +7,8 @@
 
 A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serverless architectures and workflows. Built with TypeScript and Cucumber, this framework enables end-to-end testing of complex AWS service interactions including S3, SQS, Lambda, and Step Functions.
 
+**Note: This project is in it's very junior stages and as such is not as stable or functionally comprehensive as I'd like! Feel free to raise issues and contribute in order to improve the package**
+
 ## 🚀 Features
 
 - **🔗 End-to-End Testing**: Test complete serverless workflows from S3 uploads to Step Function executions
@@ -82,6 +84,27 @@ module.exports = {
 
 ```bash
 npx cucumber-js
+```
+
+## 📖 Example Project
+
+Looking for a complete, real-world example? Check out the **[aws-testing-framework-test](https://github.com/sophiegle/aws-testing-framework-test)** repository!
+
+This comprehensive example project demonstrates four different usage patterns:
+
+- **🔧 Built-in Methods** - Use framework's built-in step definitions directly
+- **🎯 Custom Steps** - Create your own step definitions with business logic  
+- **🔌 Extend Steps** - Override and extend built-in steps with custom validation
+- **📝 Feature-only** - Use built-in steps directly in feature files
+
+> ⭐ **Clone it, try it, and adapt it for your own AWS serverless projects!**
+
+```bash
+git clone https://github.com/sophiegle/aws-testing-framework-test.git
+cd aws-testing-framework-test
+npm install
+# Follow the setup instructions to configure your AWS resources
+npm run test:all
 ```
 
 ## 📚 Documentation

@@ -331,4 +331,28 @@ jobs:
 7. **Test performance and SLAs**
 8. **Verify logging and observability**
 9. **Use tags for test organization**
-10. **Enable debug logging when needed** 
+10. **Enable debug logging when needed**
+
+## Example Project
+
+For comprehensive examples of these testing patterns in action, check out the **[aws-testing-framework-test](https://github.com/sophiegle/aws-testing-framework-test)** repository.
+
+This example project demonstrates:
+
+- **Test Organization** - Well-structured feature files and step definitions
+- **Data Management** - Proper test data handling and cleanup
+- **Performance Testing** - SLA verification and load testing
+- **Monitoring** - Log analysis and observability testing
+- **Error Handling** - Graceful failure scenarios
+- **CI/CD Integration** - Automated testing workflows
+
+The example project includes working implementations of all the patterns described in this guide, making it an excellent reference for your own testing projects.
+
+```bash
+# Explore the testing examples
+git clone https://github.com/sophiegle/aws-testing-framework-test.git
+cd aws-testing-framework-test
+npm install
+# Follow the setup instructions to configure your AWS resources
+npm run test:all
+``` 
