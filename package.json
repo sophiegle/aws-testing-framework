@@ -1,6 +1,6 @@
 {
   "name": "aws-testing-framework",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A comprehensive BDD framework for testing AWS serverless architectures with TypeScript and Cucumber. Supports S3, SQS, Lambda, Step Functions, and CloudWatch integration testing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,10 @@
       "default": "./dist/cucumber.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
