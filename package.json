@@ -4,6 +4,16 @@
   "description": "A BDD framework for testing AWS services and their interactions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./cucumber": {
+      "types": "./dist/cucumber.d.ts",
+      "default": "./dist/cucumber.js"
+    }
+  },
   "files": ["dist", "README.md", "docs"],
   "scripts": {
     "build": "tsc",
