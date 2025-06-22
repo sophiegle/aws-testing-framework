@@ -25,6 +25,6 @@ export type {
   TestScenario,
   TestStep,
   TestResult,
-  TestReporterResults
+  TestReporterResults,
 } from './reporting/TestReporter';
 export type { TestReporterResults as GenerateReportResults } from './reporting/generateReport';

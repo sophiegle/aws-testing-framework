@@ -10,10 +10,5 @@
   "readme": "README.md",
   "includeVersion": true,
   "categorizeByGroup": true,
-  "categoryOrder": [
-    "Framework",
-    "Steps",
-    "Reporting",
-    "*"
-  ]
-} 
+  "categoryOrder": ["Framework", "Steps", "Reporting", "*"]
+}
