@@ -1,8 +1,6 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import {
-  AWSTestingFramework,
-  type StepContext,
-} from '../framework/AWSTestingFramework';
+import type { ExecutionDetails, StepContext } from '../framework/types';
+import { AWSTestingFramework } from '../index';
 
 const framework = new AWSTestingFramework();
 
@@ -132,11 +130,13 @@ Then(
       const executionDetails = await framework.getExecutionDetails(
         this.stateMachineName
       );
-      const recentExecutions = executionDetails.filter((execution) => {
-        const executionTime = new Date(execution.startDate).getTime();
-        const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-        return executionTime > fiveMinutesAgo;
-      });
+      const recentExecutions = executionDetails.filter(
+        (execution: ExecutionDetails) => {
+          const executionTime = new Date(execution.startDate).getTime();
+          const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+          return executionTime > fiveMinutesAgo;
+        }
+      );
 
       if (recentExecutions.length === 0) {
         throw new Error(
@@ -214,7 +214,7 @@ Then(
       }
       // Use the most recent execution
       executions.sort(
-        (a, b) =>
+        (a: ExecutionDetails, b: ExecutionDetails) =>
           new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
       );
       this.executionArn = executions[0].executionArn;

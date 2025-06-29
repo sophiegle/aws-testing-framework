@@ -1,8 +1,6 @@
 import { Then } from '@cucumber/cucumber';
-import {
-  AWSTestingFramework,
-  type StepContext,
-} from '../framework/AWSTestingFramework';
+import type { StepContext } from '../framework/types';
+import { AWSTestingFramework } from '../index';
 
 const framework = new AWSTestingFramework();
 

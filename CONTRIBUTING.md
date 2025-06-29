@@ -111,7 +111,7 @@ type(scope): description
 feat: add new S3 step definitions
 fix: resolve Lambda timeout issues
 docs: update API documentation
-test: add unit tests for correlation tracking
+test: add unit tests for performance monitoring
 refactor: improve error handling
 ```
 
@@ -139,6 +139,16 @@ Types:
 ```
 src/
 ├── framework/          # Core framework classes
+│   ├── services/      # AWS service classes
+│   │   ├── S3Service.ts
+│   │   ├── SQSService.ts
+│   │   ├── LambdaService.ts
+│   │   ├── StepFunctionService.ts
+│   │   ├── PerformanceMonitor.ts
+│   │   ├── StepContextManager.ts
+│   │   └── HealthValidator.ts
+│   ├── AWSTestingFramework.ts  # Main framework class
+│   └── types.ts       # TypeScript interfaces
 ├── steps/             # Step definitions
 ├── reporting/         # Reporting utilities
 └── index.ts          # Main entry point
@@ -198,72 +208,84 @@ npm test
 # Run specific test file
 npm run test:unit -- AWSTestingFramework.test.ts
 
-# Run tests with coverage
+# Run with coverage
 npm run test:coverage
 
-# Run tests in watch mode
-npm run test:unit:watch
+# Run mutation tests
+npm run test:mutation
 ```
 
-### Test Coverage
+## Architecture Guidelines
 
-Maintain high test coverage:
-- **Unit tests**: 80%+ coverage
-- **Integration tests**: Cover all major workflows
-- **Mutation tests**: Ensure test quality
+### Service Classes
+
+When adding new AWS service functionality:
+
+1. **Create a dedicated service class** in `src/framework/services/`
+2. **Follow the existing pattern**:
+   ```typescript
+   export class NewService {
+     private client: NewServiceClient;
+   
+     constructor(client: NewServiceClient) {
+       this.client = client;
+     }
+   
+     async methodName(): Promise<Result> {
+       // Implementation
+     }
+   }
+   ```
+3. **Add the service to the main framework** class
+4. **Create comprehensive tests** for the service
+
+### Step Definitions
+
+When adding new step definitions:
+
+1. **Create a new file** in `src/steps/` following the naming convention
+2. **Use the framework instance** from the World context
+3. **Add proper error handling** and logging
+4. **Include both positive and negative test cases**
+
+### Type Definitions
+
+When adding new types:
+
+1. **Add to `src/framework/types.ts`** for framework-related types
+2. **Use descriptive names** and add JSDoc comments
+3. **Consider reusability** across different parts of the framework
 
 ## Documentation
 
-### Updating Documentation
+### API Documentation
 
-When adding new features, update:
+- Add JSDoc comments to all public methods
+- Include examples in comments
+- Document error conditions and return types
 
-1. **API Documentation** (`docs/API.md`)
-2. **Getting Started Guide** (`docs/GETTING_STARTED.md`)
-3. **README.md** (if needed)
-4. **Examples** (add new examples)
+### README Updates
 
-### Documentation Standards
+- Update the main README.md for new features
+- Add examples for new functionality
+- Update the architecture section if needed
 
-- Use clear, concise language
-- Include code examples
-- Add screenshots for UI components
-- Keep documentation up to date
-- Use proper markdown formatting
+### Code Comments
 
-### Generating Documentation
-
-```bash
-# Generate API documentation
-npm run docs:generate
-
-# Build documentation
-npm run docs:build
-```
+- Use clear, concise comments
+- Explain complex business logic
+- Document AWS service-specific considerations
 
 ## Pull Request Process
 
-### Before Submitting
+1. **Ensure all tests pass** before submitting
+2. **Update documentation** for any new features
+3. **Follow the conventional commit format**
+4. **Provide a clear description** of changes
+5. **Include examples** if adding new functionality
+6. **Reference any related issues**
 
-1. **Test your changes**:
-   ```bash
-   npm run test:unit
-   npm test
-   npm run test:coverage
-   ```
-
-2. **Check code quality**:
-   ```bash
-   npm run check
-   ```
-
-3. **Update documentation** if needed
-
-4. **Add tests** for new functionality
-
-### Pull Request Template
-
-Use the provided pull request template:
+### PR Template
 
 ```markdown
 ## Description
@@ -272,115 +294,93 @@ Brief description of changes
 ## Type of Change
 - [ ] Bug fix
 - [ ] New feature
+- [ ] Breaking change
 - [ ] Documentation update
-- [ ] Test addition
-- [ ] Refactoring
 
 ## Testing
 - [ ] Unit tests pass
 - [ ] Integration tests pass
-- [ ] Documentation updated
-- [ ] Code quality checks pass
+- [ ] Manual testing completed
 
 ## Checklist
-- [ ] My code follows the style guidelines
-- [ ] I have performed a self-review
-- [ ] I have commented my code where needed
-- [ ] I have made corresponding changes to documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective
-- [ ] New and existing unit tests pass locally
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] No console.log statements (unless intentional)
 ```
-
-### Review Process
-
-1. **Automated checks** must pass
-2. **Code review** by maintainers
-3. **Documentation review** if needed
-4. **Final approval** before merge
 
 ## Release Process
 
-### Versioning
-
-We use [Semantic Versioning](https://semver.org/):
-
-- **Major**: Breaking changes
-- **Minor**: New features (backward compatible)
-- **Patch**: Bug fixes (backward compatible)
-
-### Creating a Release
-
-1. **Update version**:
-   ```bash
-   npm version patch|minor|major
-   ```
-
-2. **Build and test**:
-   ```bash
-   npm run build
-   npm test
-   ```
-
-3. **Publish**:
-   ```bash
-   npm publish
-   ```
-
-4. **Create GitHub release** with release notes
+1. **Update version** in package.json
+2. **Update CHANGELOG.md** with new features/fixes
+3. **Create a release tag**
+4. **Publish to npm** (if applicable)
 
 ## Community
 
 ### Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/sophiegle/aws-testing-framework/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/sophiegle/aws-testing-framework/discussions)
-- **Documentation**: [Full Documentation](docs/)
+- **Issues**: Use GitHub Issues for bug reports and feature requests
+- **Discussions**: Use GitHub Discussions for questions and ideas
+- **Documentation**: Check the README and API docs first
 
-We're here to help you contribute successfully!
+### Code Reviews
 
-### Communication Channels
+- Be constructive and respectful
+- Focus on the code, not the person
+- Provide specific feedback and suggestions
+- Ask questions when something is unclear
 
-- **GitHub Issues**: Bug reports and feature requests
-- **GitHub Discussions**: Questions and general discussion
+## Development Workflow
 
-### Recognition
+### Daily Development
 
-Contributors will be recognized in:
-- **README.md** contributors section
-- **Release notes** for significant contributions
-- **GitHub contributors** page
+1. **Pull latest changes**: `git pull upstream main`
+2. **Create feature branch**: `git checkout -b feature/your-feature`
+3. **Make changes** and test locally
+4. **Commit changes**: Use conventional commits
+5. **Push and create PR**: `git push origin feature/your-feature`
 
-## Areas for Contribution
+### Before Submitting
 
-### High Priority
+- [ ] All tests pass
+- [ ] Code is formatted (`npm run format`)
+- [ ] Linting passes (`npm run lint`)
+- [ ] Documentation is updated
+- [ ] No sensitive data is committed
 
-- **Performance improvements**
-- **Additional AWS service support**
-- **Enhanced error handling**
-- **Better documentation**
-- **More examples**
+## Performance Considerations
 
-### Medium Priority
+When contributing performance-related features:
 
-- **New step definitions**
-- **Reporting improvements**
-- **CI/CD enhancements**
-- **Testing utilities**
+1. **Measure impact** with benchmarks
+2. **Consider AWS costs** of additional API calls
+3. **Optimize for common use cases**
+4. **Document performance implications**
 
-### Low Priority
+## Security Guidelines
 
-- **Code refactoring**
-- **Documentation updates**
-- **Minor bug fixes**
+1. **Never commit credentials** or sensitive data
+2. **Use environment variables** for configuration
+3. **Validate all inputs** to prevent injection attacks
+4. **Follow AWS security best practices**
 
-## Getting Help
+## Troubleshooting
 
-If you need help with contributing:
+### Common Issues
 
-1. **Check existing issues** and discussions
-2. **Read the documentation** thoroughly
-3. **Ask questions** in GitHub Discussions
-4. **Contact maintainers** for complex issues
+1. **AWS Credentials**: Ensure AWS CLI is configured
+2. **TypeScript Errors**: Run `npm run build` to check for type issues
+3. **Test Failures**: Check AWS service permissions and configuration
+4. **Build Issues**: Clear node_modules and reinstall dependencies
+
+### Getting Help
+
+If you encounter issues:
+
+1. Check existing issues and discussions
+2. Search the documentation
+3. Create a new issue with detailed information
+4. Include error messages and environment details
 
 Thank you for contributing to the AWS Testing Framework! 🚀 

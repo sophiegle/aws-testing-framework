@@ -7,15 +7,32 @@ export type { S3Client } from '@aws-sdk/client-s3';
 export type { SFNClient } from '@aws-sdk/client-sfn';
 export type { SNSClient } from '@aws-sdk/client-sns';
 export type { SQSClient } from '@aws-sdk/client-sqs';
-export {
-  type AWSConfig,
-  AWSTestingFramework,
-  type ExecutionDetails,
-  type FrameworkConfig,
-  type PerformanceMetrics,
-  type StepContext,
-  type TestMetrics,
-} from './framework/AWSTestingFramework';
+
+// Export the main framework class
+export { AWSTestingFramework } from './framework/AWSTestingFramework';
+
+// Export framework types from the types file
+export type {
+  AWSConfig,
+  AWSSetupValidation,
+  CleanupOptions,
+  ContextValidation,
+  ExecutionDetails,
+  FrameworkConfig,
+  HealthStatus,
+  PerformanceMetrics,
+  StepContext,
+  StepFunctionDataFlow,
+  StepFunctionDefinition,
+  StepFunctionExecutionResult,
+  StepFunctionPerformance,
+  StepFunctionSLAs,
+  StepFunctionSLAVerification,
+  StepFunctionStateOutput,
+  StepFunctionStateOutputVerification,
+  TestMetrics,
+} from './framework/types';
+
 export { default as CustomFormatter } from './reporting/CustomFormatter';
 export type { TestReporterResults as GenerateReportResults } from './reporting/generateReport';
 export { generateHtmlReport } from './reporting/generateReport';

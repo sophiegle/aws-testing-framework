@@ -3,25 +3,25 @@
 [![npm version](https://badge.fury.io/js/aws-testing-framework.svg)](https://badge.fury.io/js/aws-testing-framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js CI](https://github.com/sophiegle/aws-testing-framework/actions/workflows/test.yml/badge.svg)](https://github.com/sophiegle/aws-testing-framework/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/sophiegle/aws-testing-framework/branch/main/graph/badge.svg)](https://codecov.io/gh/sophiegle/aws-testing-framework)
+[![codecov](https://codecov.io/gh/sophiegle/aws-testing-framework/branch/main/graph/badge.svg)](https://codecov.io/gh/sophiegle/aws-testing-framework/branch/main/graph/badge.svg)
 
 A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serverless architectures and workflows. Built with TypeScript and Cucumber, this framework enables end-to-end testing of complex AWS service interactions including S3, SQS, Lambda, and Step Functions.
 
-**Note: This project is in it's very junior stages and as such is not as stable or functionally comprehensive as I'd like! Feel free to raise issues and contribute in order to improve the package**
+**Note: This project is in its early stages and as such is not as stable or functionally comprehensive as I'd like! Feel free to raise issues and contribute in order to improve the package**
 
 ## 🚀 Features
 
 - **🔗 End-to-End Testing**: Test complete serverless workflows from S3 uploads to Step Function executions
-- **🆔 Correlation Tracking**: Trace data flow through multiple AWS services using correlation IDs
 - **📊 Advanced Monitoring**: CloudWatch logs analysis, performance metrics, and SLA verification
 - **🔄 Retry Logic**: Built-in retry mechanisms for handling AWS service eventual consistency
 - **📈 Comprehensive Reporting**: HTML, JSON, and custom test reports with detailed execution metrics
 - **🔧 Extensible**: Easy to extend with custom step definitions and AWS service integrations
 - **⚡ Performance Focused**: Optimized for fast test execution with parallel processing support
+- **🏗️ Modular Architecture**: Clean separation of concerns with dedicated service classes
 
 ## 🏗️ Supported AWS Services
 
-- **S3**: File uploads, downloads, and event notifications
+- **S3**: File uploads, downloads, and existence checks
 - **SQS**: Message sending, receiving, and queue monitoring
 - **Lambda**: Function invocation, execution tracking, and log analysis
 - **Step Functions**: State machine execution, status monitoring, and history analysis
@@ -49,7 +49,7 @@ export AWS_REGION=us-east-1
 
 ### 2. Create Your First Test
 
-```
+```gherkin
 Feature: End-to-End Data Pipeline
   Scenario: Process uploaded file
     Given I have an S3 bucket named "test-bucket"
@@ -114,11 +114,19 @@ npm run test:all
 ```typescript
 import { AWSTestingFramework } from 'aws-testing-framework';
 
-const framework = new AWSTestingFramework({
-  region: 'us-east-1',
-  timeout: 30000,
+// Development environment
+const framework = AWSTestingFramework.createForDevelopment('us-east-1');
+
+// Production environment
+const framework = AWSTestingFramework.createForProduction('us-west-2');
+
+// Custom configuration
+const framework = AWSTestingFramework.create({
+  aws: { region: 'eu-west-1' },
+  defaultTimeout: 60000,
   retryAttempts: 3,
-  correlationIdPrefix: 'test'
+  enableLogging: true,
+  logLevel: 'info'
 });
 ```
 
@@ -132,14 +140,13 @@ AWS_PROFILE=my-profile
 # Framework Configuration
 AWS_TESTING_TIMEOUT=30000
 AWS_TESTING_RETRY_ATTEMPTS=3
-AWS_TESTING_CORRELATION_PREFIX=test
 ```
 
 ## 🧪 Examples
 
 ### Basic Pipeline Testing
 
-```
+```gherkin
 Feature: End-to-End Data Pipeline
   Scenario: Process uploaded file
     Given I have an S3 bucket named "test-bucket"
@@ -153,7 +160,7 @@ Feature: End-to-End Data Pipeline
 
 ### Advanced Monitoring
 
-```
+```gherkin
 Scenario: Verify comprehensive monitoring
   When I upload a file "test-data.json" to the S3 bucket
   Then the Lambda function logs should contain "Processing file"
@@ -165,7 +172,7 @@ Scenario: Verify comprehensive monitoring
 
 ### Error Handling
 
-```
+```gherkin
 Scenario: Handle processing errors gracefully
   When I upload a file "invalid-data.json" with content "invalid-json" to the S3 bucket
   Then the Lambda function logs should contain "Error processing file"
@@ -174,17 +181,19 @@ Scenario: Handle processing errors gracefully
 
 ## 🔍 Advanced Features
 
-### Correlation Tracking
+### Performance Monitoring
 
 ```typescript
-// Generate correlation ID for end-to-end tracking
-const correlationId = framework.generateCorrelationId();
+// Start performance monitoring
+framework.startTestRun();
 
-// Upload file with tracking
-await framework.uploadFileWithTracking('my-bucket', 'test.txt', 'content', correlationId);
+// Perform operations
+await framework.uploadFile('my-bucket', 'test.txt', 'content');
+await framework.sendMessage('queue-url', 'message');
 
-// Trace through entire workflow
-const traced = await framework.traceFileThroughWorkflow('test.txt', correlationId);
+// Get comprehensive metrics
+const metrics = framework.getTestMetrics();
+console.log(framework.generatePerformanceReport());
 ```
 
 ### CloudWatch Logs Analysis
@@ -218,6 +227,45 @@ const slaCheck = await framework.verifyStepFunctionSLAs(executionArn, {
   maxStateExecutionTime: 10000
 });
 ```
+
+### Health Monitoring
+
+```typescript
+// Validate AWS setup
+const setup = await framework.validateAWSSetup();
+if (!setup.isValid) {
+  console.error('AWS setup issues:', setup.errors);
+}
+
+// Get framework health
+const health = await framework.getHealthStatus();
+console.log('Framework healthy:', health.isHealthy);
+```
+
+## 🏗️ Architecture
+
+The framework uses a modular architecture with dedicated service classes:
+
+### Core Framework
+- **`AWSTestingFramework`**: Main framework class that orchestrates all services
+- **`types.ts`**: TypeScript interfaces and type definitions
+
+### Service Classes
+- **`S3Service`**: S3 bucket and file operations
+- **`SQSService`**: SQS queue and message operations
+- **`LambdaService`**: Lambda function operations
+- **`StepFunctionService`**: Step Function state machine operations
+- **`PerformanceMonitor`**: Performance metrics and reporting
+- **`StepContextManager`**: Test step context management
+- **`HealthValidator`**: AWS service health validation
+
+### Step Definitions
+- **`s3-steps.ts`**: S3 operations (file uploads, bucket verification)
+- **`sqs-steps.ts`**: SQS operations (message sending, queue verification)
+- **`lambda-steps.ts`**: Lambda operations (function invocation, execution tracking)
+- **`step-function-steps.ts`**: Step Function operations (execution, state verification)
+- **`monitoring-steps.ts`**: CloudWatch logs and advanced monitoring
+- **`correlation-steps.ts`**: Cross-service correlation and data tracing
 
 ## 🛠️ Development
 
@@ -297,7 +345,7 @@ See our [Security Policy](SECURITY.md) for more details.
 
 ## 📊 Project Status
 
-- **Version**: 0.1.0
+- **Version**: 0.1.8
 - **Status**: Active Development
 - **Node.js Support**: 18+
 - **AWS Services**: S3, SQS, Lambda, Step Functions, CloudWatch Logs
@@ -314,92 +362,6 @@ See our [Security Policy](SECURITY.md) for more details.
 
 **Made with ❤️ for the AWS community**
 
-## Step Definitions Organization
-
-The framework organizes step definitions by functionality:
-
-- **`s3-steps.ts`**: S3 operations (file uploads, bucket verification)
-- **`sqs-steps.ts`**: SQS operations (message sending, queue verification)
-- **`lambda-steps.ts`**: Lambda operations (function invocation, execution tracking)
-- **`step-function-steps.ts`**: Step Function operations (execution, state verification)
-- **`correlation-steps.ts`**: Cross-service correlation and data tracing
-- **`monitoring-steps.ts`**: CloudWatch logs and advanced monitoring
-
-## Example Usage
-
-### Basic Data Pipeline Test
-
-```
-Feature: End-to-End Data Pipeline
-  Scenario: Process uploaded file
-    Given I have an S3 bucket named "test-bucket"
-    And I have a Lambda function named "test-processor"
-    And I have a Step Function named "test-pipeline"
-    When I upload a file "test-data.json" with content "test-content" to the S3 bucket
-    Then the Lambda function should be invoked
-    And the Step Function should be executed
-    And I should be able to trace the file "test-data.json" through the entire pipeline
-```
-
-### Advanced Monitoring Test
-
-```
-Scenario: Verify comprehensive monitoring
-  When I upload a file "test-data.json" to the S3 bucket
-  Then the Lambda function logs should contain "Processing file"
-  And the Lambda function logs should not contain errors
-  And the Lambda function should have acceptable execution metrics
-  And the Step Function should have no data loss or corruption
-  And the Step Function should meet performance SLAs
-```
-
-## Configuration
-
-### AWS Credentials
-
-Configure AWS credentials using one of these methods:
-
-1. **AWS CLI**: `aws configure`
-2. **Environment Variables**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-3. **IAM Roles**: For EC2/ECS instances
-4. **AWS Profiles**: `AWS_PROFILE=my-profile`
-
-### Test Configuration
-
-Create a `cucumber.js` file for custom configuration:
-
-```javascript
-module.exports = {
-  default: {
-    requireModule: ['ts-node/register'],
-    require: ['src/steps/*.ts'],
-    format: ['progress', 'html:reports/cucumber-report.html'],
-    formatOptions: { snippetInterface: 'async-await' }
-  }
-};
-```
-
-## Architecture
-
-The framework provides a layered approach to testing:
-
-1. **Service Layer**: Direct AWS service interactions
-2. **Correlation Layer**: Cross-service data tracking
-3. **Monitoring Layer**: Advanced observability and validation
-4. **Test Layer**: BDD scenarios and step definitions
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
 ## AWS Environment Setup for End-to-End Testing
 
 To use this framework for production-ready, end-to-end testing, your AWS environment must be configured as follows:
@@ -410,6 +372,3 @@ To use this framework for production-ready, end-to-end testing, your AWS environ
 4. **Step Function**: The Step Function should be configured to process the input as expected from the Lambda.
 
 This framework does not simulate AWS events. It only observes and verifies the real event flow in your AWS environment. Ensure all resources and permissions are set up before running the tests.
-
-## Problems to look at
-

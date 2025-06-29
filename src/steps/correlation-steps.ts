@@ -1,8 +1,6 @@
 import { Given, Then } from '@cucumber/cucumber';
-import {
-  AWSTestingFramework,
-  type StepContext,
-} from '../framework/AWSTestingFramework';
+import type { ExecutionDetails, StepContext } from '../framework/types';
+import { AWSTestingFramework } from '../index';
 
 const framework = new AWSTestingFramework();
 
@@ -46,11 +44,13 @@ Then(
   'the Step Function {string} should have recent executions',
   async function (this: StepContext, stateMachineName: string) {
     const executions = await framework.getExecutionDetails(stateMachineName);
-    const recentExecutions = executions.filter((execution) => {
-      const executionTime = new Date(execution.startDate).getTime();
-      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-      return executionTime > fiveMinutesAgo;
-    });
+    const recentExecutions = executions.filter(
+      (execution: ExecutionDetails) => {
+        const executionTime = new Date(execution.startDate).getTime();
+        const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+        return executionTime > fiveMinutesAgo;
+      }
+    );
 
     if (recentExecutions.length === 0) {
       throw new Error(
