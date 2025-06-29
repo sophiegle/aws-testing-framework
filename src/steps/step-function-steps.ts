@@ -103,53 +103,46 @@ Then(
 
     // First, try to check if the Step Function was triggered by the Lambda function
     if (this.functionName) {
-      console.log(`Checking if Lambda function "${this.functionName}" triggered Step Function "${this.stateMachineName}"`);
-      const lambdaTriggeredStepFunction = await framework.verifyLambdaTriggeredStateMachine(
-        this.functionName,
-        this.stateMachineName
-      );
+      const lambdaTriggeredStepFunction =
+        await framework.verifyLambdaTriggeredStateMachine(
+          this.functionName,
+          this.stateMachineName
+        );
       if (lambdaTriggeredStepFunction) {
-        console.log(`Success: Lambda function "${this.functionName}" triggered Step Function "${this.stateMachineName}"`);
         return; // Success - Lambda triggered the Step Function
-      } else {
-        console.log(`Lambda function "${this.functionName}" did not trigger Step Function "${this.stateMachineName}"`);
       }
-    } else {
-      console.log('No Lambda function name available in context, checking for direct Step Function execution');
     }
 
     // If Lambda didn't trigger it, check for any recent executions
-    console.log(`Checking for recent executions of Step Function "${this.stateMachineName}"`);
     const stateMachineTriggered = await framework.verifyStateMachineTriggered(
       this.stateMachineName,
       30000 // 30 second timeout
     );
-    
+
     if (!stateMachineTriggered) {
-      console.log(`No recent executions found for Step Function "${this.stateMachineName}", checking for any executions`);
       // As a fallback, check if there are any executions at all
       const executions = await framework.listExecutions(this.stateMachineName);
       if (executions.length === 0) {
-        throw new Error(`Step Function "${this.stateMachineName}" was not executed - no executions found`);
-      } else {
-        console.log(`Found ${executions.length} executions for Step Function "${this.stateMachineName}", checking if any are recent`);
-        // There are executions, but they might not be recent enough
-        // Let's check the execution details to see if any are recent
-        const executionDetails = await framework.getExecutionDetails(this.stateMachineName);
-        const recentExecutions = executionDetails.filter((execution) => {
-          const executionTime = new Date(execution.startDate).getTime();
-          const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-          return executionTime > fiveMinutesAgo;
-        });
-        
-        if (recentExecutions.length === 0) {
-          throw new Error(`Step Function "${this.stateMachineName}" was not executed recently - only old executions found (${executionDetails.length} total executions, none in last 5 minutes)`);
-        } else {
-          console.log(`Found ${recentExecutions.length} recent executions for Step Function "${this.stateMachineName}"`);
-        }
+        throw new Error(
+          `Step Function "${this.stateMachineName}" was not executed - no executions found`
+        );
       }
-    } else {
-      console.log(`Success: Step Function "${this.stateMachineName}" was executed recently`);
+      // There are executions, but they might not be recent enough
+      // Let's check the execution details to see if any are recent
+      const executionDetails = await framework.getExecutionDetails(
+        this.stateMachineName
+      );
+      const recentExecutions = executionDetails.filter((execution) => {
+        const executionTime = new Date(execution.startDate).getTime();
+        const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+        return executionTime > fiveMinutesAgo;
+      });
+
+      if (recentExecutions.length === 0) {
+        throw new Error(
+          `Step Function "${this.stateMachineName}" was not executed recently - only old executions found (${executionDetails.length} total executions, none in last 5 minutes)`
+        );
+      }
     }
   }
 );
@@ -211,14 +204,19 @@ Then(
           'Execution ARN is not set and state machine name is not available. Make sure to create a Step Function first.'
         );
       }
-      const executions = await framework.getExecutionDetails(this.stateMachineName);
+      const executions = await framework.getExecutionDetails(
+        this.stateMachineName
+      );
       if (!executions.length) {
         throw new Error(
           `No executions found for Step Function "${this.stateMachineName}". Cannot check performance.`
         );
       }
       // Use the most recent execution
-      executions.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      executions.sort(
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
       this.executionArn = executions[0].executionArn;
     }
 

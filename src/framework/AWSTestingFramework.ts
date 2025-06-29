@@ -417,11 +417,13 @@ export class AWSTestingFramework {
     const stateMachine = response.stateMachines?.find(
       (sm) => sm.name === stateMachineName
     );
-    
+
     if (!stateMachine?.stateMachineArn) {
-      throw new Error(`State machine "${stateMachineName}" not found. Available state machines: ${response.stateMachines?.map(sm => sm.name).join(', ') || 'none'}`);
+      throw new Error(
+        `State machine "${stateMachineName}" not found. Available state machines: ${response.stateMachines?.map((sm) => sm.name).join(', ') || 'none'}`
+      );
     }
-    
+
     return stateMachine.stateMachineArn;
   }
 
@@ -505,11 +507,13 @@ export class AWSTestingFramework {
   async trackStateMachineExecutions(stateMachineName: string): Promise<void> {
     try {
       const stateMachineArn = await this.findStateMachine(stateMachineName);
-      
+
       if (!stateMachineArn || stateMachineArn.trim() === '') {
-        throw new Error(`Invalid state machine ARN for "${stateMachineName}": ${stateMachineArn}`);
+        throw new Error(
+          `Invalid state machine ARN for "${stateMachineName}": ${stateMachineArn}`
+        );
       }
-      
+
       const response = await this.sfnClient.send(
         new ListExecutionsCommand({
           stateMachineArn,
@@ -553,7 +557,10 @@ export class AWSTestingFramework {
 
       this.executionTracker.set(stateMachineName, executions);
     } catch (error) {
-      console.warn(`Error tracking executions for state machine "${stateMachineName}":`, error);
+      console.warn(
+        `Error tracking executions for state machine "${stateMachineName}":`,
+        error
+      );
       // Set empty array to avoid undefined errors
       this.executionTracker.set(stateMachineName, []);
       throw error; // Re-throw to let calling code handle it
