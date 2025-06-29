@@ -7,6 +7,7 @@ import {
 import {
   CreateBucketCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -48,18 +49,6 @@ describe('AWSTestingFramework', () => {
   });
 
   describe('S3 Operations', () => {
-    it('should create a bucket', async () => {
-      const bucketName = 'test-bucket';
-      s3Mock.on(CreateBucketCommand).resolves({});
-
-      await framework.createBucket(bucketName);
-
-      expect(s3Mock.calls()).toHaveLength(1);
-      expect(s3Mock.calls()[0].args[0].input).toEqual({
-        Bucket: bucketName,
-      });
-    });
-
     it('should upload a file to S3', async () => {
       const bucketName = 'test-bucket';
       const key = 'test.txt';
@@ -79,7 +68,7 @@ describe('AWSTestingFramework', () => {
     it('should check if a file exists in S3', async () => {
       const bucketName = 'test-bucket';
       const key = 'test.txt';
-      s3Mock.on(GetObjectCommand).resolves({});
+      s3Mock.on(HeadObjectCommand).resolves({});
 
       const exists = await framework.checkFileExists(bucketName, key);
 
@@ -93,23 +82,6 @@ describe('AWSTestingFramework', () => {
   });
 
   describe('SQS Operations', () => {
-    it('should create a queue', async () => {
-      const queueName = 'test-queue';
-      sqsMock.on(CreateQueueCommand).resolves({
-        QueueUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue',
-      });
-
-      const queueUrl = await framework.createQueue(queueName);
-
-      expect(queueUrl).toBe(
-        'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue'
-      );
-      expect(sqsMock.calls()).toHaveLength(1);
-      expect(sqsMock.calls()[0].args[0].input).toEqual({
-        QueueName: queueName,
-      });
-    });
-
     it('should send a message to a queue', async () => {
       const queueUrl =
         'https://sqs.us-east-1.amazonaws.com/123456789012/test-queue';
@@ -154,28 +126,6 @@ describe('AWSTestingFramework', () => {
   });
 
   describe('Lambda Operations', () => {
-    it('should create a function', async () => {
-      const functionName = 'test-function';
-      const handler = 'index.handler';
-      lambdaMock.on(CreateFunctionCommand).resolves({
-        FunctionArn:
-          'arn:aws:lambda:us-east-1:123456789012:function:test-function',
-      });
-
-      await framework.createFunction(functionName, handler);
-
-      expect(lambdaMock.calls()).toHaveLength(1);
-      expect(lambdaMock.calls()[0].args[0].input).toEqual({
-        FunctionName: functionName,
-        Handler: handler,
-        Role: 'arn:aws:iam::123456789012:role/lambda-role',
-        Runtime: 'nodejs22.x',
-        Code: {
-          ZipFile: expect.any(Uint8Array),
-        },
-      });
-    });
-
     it('should invoke a function', async () => {
       const functionName = 'test-function';
       const payload = { test: 'data' };
@@ -209,26 +159,6 @@ describe('AWSTestingFramework', () => {
   });
 
   describe('Step Functions Operations', () => {
-    it('should create a state machine', async () => {
-      const name = 'test-state-machine';
-      sfnMock.on(CreateStateMachineCommand).resolves({
-        stateMachineArn:
-          'arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine',
-      });
-
-      const stateMachineArn = await framework.createStateMachine(name);
-
-      expect(stateMachineArn).toBe(
-        'arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine'
-      );
-      expect(sfnMock.calls()).toHaveLength(1);
-      expect(sfnMock.calls()[0].args[0].input).toEqual({
-        name,
-        roleArn: 'arn:aws:iam::123456789012:role/step-functions-role',
-        definition: expect.any(String),
-      });
-    });
-
     it('should start an execution', async () => {
       const stateMachineArn =
         'arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine';

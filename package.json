@@ -14,10 +14,7 @@
       "default": "./dist/cucumber.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",

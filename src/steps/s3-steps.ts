@@ -23,7 +23,14 @@ When(
         'Bucket name is not set. Make sure to create a bucket first.'
       );
     }
+
+    this.uploadedFileName = fileName;
+    this.uploadedFileContent = 'Test content';
+
     await framework.uploadFile(this.bucketName, fileName, 'Test content');
+
+    // Add a small delay to allow S3 event notification to propagate
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 );
 
@@ -43,7 +50,6 @@ Then(
   }
 );
 
-// Workflow-specific S3 operations
 When(
   'I upload a file {string} with content {string} to the S3 bucket',
   async function (this: StepContext, fileName: string, content: string) {
@@ -53,17 +59,10 @@ When(
       );
     }
 
-    // Generate correlation ID for tracking
-    this.correlationId = framework.generateCorrelationId();
     this.uploadedFileName = fileName;
     this.uploadedFileContent = content;
 
-    await framework.uploadFileWithTracking(
-      this.bucketName,
-      fileName,
-      content,
-      this.correlationId
-    );
+    await framework.uploadFile(this.bucketName, fileName, content);
 
     // Add a small delay to allow S3 event notification to propagate
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -86,15 +85,7 @@ When(
     ];
 
     for (const file of files) {
-      const correlationId = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      this.correlationId = correlationId;
-
-      await framework.uploadFileWithTracking(
-        this.bucketName,
-        file.name,
-        file.content,
-        correlationId
-      );
+      await framework.uploadFile(this.bucketName, file.name, file.content);
 
       // Wait a bit between uploads to avoid overwhelming the system
       await new Promise((resolve) => setTimeout(resolve, 1000));

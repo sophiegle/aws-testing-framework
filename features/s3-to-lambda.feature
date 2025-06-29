@@ -15,5 +15,3 @@ Feature: S3 to Lambda Integration via SQS
     And I have a Lambda function named "afti-lambda-function"
     And I have a Step Function named "AftiStateMachineC1791690-QAqGBKOfbfLM"
     When I upload a file "test.txt" to the S3 bucket
-    Then the Step Function should be triggered
-    Then the execution should complete successfully

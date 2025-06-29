@@ -1,9 +1,12 @@
 // Core framework exports
-export { AWSTestingFramework } from './framework/AWSTestingFramework';
-export type {
-  StepContext,
-  ExecutionDetails,
-  WorkflowTrace,
+export {
+  AWSTestingFramework,
+  type AWSConfig,
+  type FrameworkConfig,
+  type StepContext,
+  type ExecutionDetails,
+  type PerformanceMetrics,
+  type TestMetrics,
 } from './framework/AWSTestingFramework';
 
 // Re-export commonly used AWS types
@@ -28,3 +31,19 @@ export type {
   TestReporterResults,
 } from './reporting/TestReporter';
 export type { TestReporterResults as GenerateReportResults } from './reporting/generateReport';
+
+// Export test data generator utilities
+export {
+  TestDataGenerator,
+  testDataGenerator,
+  generateTestData,
+  generateS3EventData,
+  generateSQSMessageData,
+  generateLambdaPayloadData,
+  generateStepFunctionInputData,
+} from './utils/TestDataGenerator';
+export type {
+  TestDataOptions,
+  DataType,
+  DataSize,
+} from './utils/TestDataGenerator';

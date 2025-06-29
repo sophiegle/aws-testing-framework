@@ -11,9 +11,12 @@ export * from './steps/correlation-steps';
 export * from './steps/monitoring-steps';
 
 // Re-export the framework for use in step definitions
-export { AWSTestingFramework } from './framework/AWSTestingFramework';
-export type {
-  StepContext,
-  ExecutionDetails,
-  WorkflowTrace,
+import {
+  type AWSConfig,
+  AWSTestingFramework,
+  type ExecutionDetails,
+  type FrameworkConfig,
+  type PerformanceMetrics,
+  type StepContext,
+  type TestMetrics,
 } from './framework/AWSTestingFramework';
