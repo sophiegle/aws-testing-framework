@@ -138,5 +138,11 @@ docs/
 .yarn/install-state.gz
 .pnp.*
 
+# macOS system files
+.DS_Store
+
 # Stryker mutation testing temporary files
 .stryker-tmp/
+
+# Stryker mutation testing HTML report
+reports/mutation/mutation.html
