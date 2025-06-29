@@ -7,7 +7,7 @@ Feature: End-to-End Serverless Data Pipeline
     Given I have an S3 bucket named "awstestingframeworkinfrastructu-aftibucket816930f0-eebqmqrjqual"
     And I have an SQS queue named "afti-queue"
     And I have a Lambda function named "afti-lambda-function"
-    And I have a Step Function named "AftiStateMachineC1791690"
+    And I have a Step Function named "AftiStateMachineC1791690-QAqGBKOfbfLM"
 
   Scenario: Complete pipeline with traceability
     When I upload a file "test-pipeline.txt" with content "test-data-123" to the S3 bucket

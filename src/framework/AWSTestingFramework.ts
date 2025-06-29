@@ -417,7 +417,12 @@ export class AWSTestingFramework {
     const stateMachine = response.stateMachines?.find(
       (sm) => sm.name === stateMachineName
     );
-    return stateMachine?.stateMachineArn || '';
+    
+    if (!stateMachine?.stateMachineArn) {
+      throw new Error(`State machine "${stateMachineName}" not found. Available state machines: ${response.stateMachines?.map(sm => sm.name).join(', ') || 'none'}`);
+    }
+    
+    return stateMachine.stateMachineArn;
   }
 
   async startExecution(
@@ -498,49 +503,61 @@ export class AWSTestingFramework {
    * Track executions for a specific state machine
    */
   async trackStateMachineExecutions(stateMachineName: string): Promise<void> {
-    const stateMachineArn = await this.findStateMachine(stateMachineName);
-    const response = await this.sfnClient.send(
-      new ListExecutionsCommand({
-        stateMachineArn,
-        maxResults: 10,
-      })
-    );
+    try {
+      const stateMachineArn = await this.findStateMachine(stateMachineName);
+      
+      if (!stateMachineArn || stateMachineArn.trim() === '') {
+        throw new Error(`Invalid state machine ARN for "${stateMachineName}": ${stateMachineArn}`);
+      }
+      
+      const response = await this.sfnClient.send(
+        new ListExecutionsCommand({
+          stateMachineArn,
+          maxResults: 10,
+        })
+      );
 
-    const executions: ExecutionDetails[] = [];
+      const executions: ExecutionDetails[] = [];
 
-    // Get full details for each execution including input/output
-    for (const execution of response.executions || []) {
-      if (execution.executionArn) {
-        try {
-          const executionDetails = await this.sfnClient.send(
-            new DescribeExecutionCommand({
+      // Get full details for each execution including input/output
+      for (const execution of response.executions || []) {
+        if (execution.executionArn) {
+          try {
+            const executionDetails = await this.sfnClient.send(
+              new DescribeExecutionCommand({
+                executionArn: execution.executionArn,
+              })
+            );
+
+            executions.push({
               executionArn: execution.executionArn,
-            })
-          );
-
-          executions.push({
-            executionArn: execution.executionArn,
-            stateMachineArn: execution.stateMachineArn || '',
-            status: execution.status || '',
-            startDate: execution.startDate || new Date(),
-            stopDate: execution.stopDate,
-            input: executionDetails.input,
-            output: executionDetails.output,
-          });
-        } catch (_error) {
-          // Fallback to basic details
-          executions.push({
-            executionArn: execution.executionArn,
-            stateMachineArn: execution.stateMachineArn || '',
-            status: execution.status || '',
-            startDate: execution.startDate || new Date(),
-            stopDate: execution.stopDate,
-          });
+              stateMachineArn: execution.stateMachineArn || '',
+              status: execution.status || '',
+              startDate: execution.startDate || new Date(),
+              stopDate: execution.stopDate,
+              input: executionDetails.input,
+              output: executionDetails.output,
+            });
+          } catch (_error) {
+            // Fallback to basic details
+            executions.push({
+              executionArn: execution.executionArn,
+              stateMachineArn: execution.stateMachineArn || '',
+              status: execution.status || '',
+              startDate: execution.startDate || new Date(),
+              stopDate: execution.stopDate,
+            });
+          }
         }
       }
-    }
 
-    this.executionTracker.set(stateMachineName, executions);
+      this.executionTracker.set(stateMachineName, executions);
+    } catch (error) {
+      console.warn(`Error tracking executions for state machine "${stateMachineName}":`, error);
+      // Set empty array to avoid undefined errors
+      this.executionTracker.set(stateMachineName, []);
+      throw error; // Re-throw to let calling code handle it
+    }
   }
 
   /**
