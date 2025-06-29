@@ -154,6 +154,7 @@ describe('generateReport', () => {
     it('should handle missing report file', () => {
       (existsSync as jest.Mock).mockReturnValue(false);
       main();
+      // biome-ignore lint/suspicious/noConsole: Testing console error output
       expect(console.error).toHaveBeenCalledWith(
         'Error: No test report found at',
         'coverage/functional-tests/cucumber-report.json'

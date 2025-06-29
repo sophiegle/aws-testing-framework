@@ -463,15 +463,15 @@ describe('AWSTestingFramework', () => {
       expect(sfnMock.calls()).toHaveLength(1);
     });
 
-    it('should return empty string when state machine is not found', async () => {
+    it('should throw an error when state machine is not found', async () => {
       const stateMachineName = 'missing-state-machine';
       sfnMock.on(ListStateMachinesCommand).resolves({
         stateMachines: [],
       });
 
-      const result = await framework.findStateMachine(stateMachineName);
-
-      expect(result).toBe('');
+      await expect(
+        framework.findStateMachine(stateMachineName)
+      ).rejects.toThrow(`State machine "${stateMachineName}" not found.`);
     });
   });
 

@@ -176,6 +176,11 @@ export function main() {
 
   const reportPath = join('coverage/functional-tests', 'cucumber-report.json');
   if (!existsSync(reportPath)) {
+    // biome-ignore lint/suspicious/noConsole: Required for CLI output and test expectations
+    console.error(
+      'Error: No test report found at',
+      'coverage/functional-tests/cucumber-report.json'
+    );
     process.exit(1);
   }
 
@@ -190,6 +195,10 @@ export function main() {
     const results = convertCucumberReportToResults(report);
     const htmlReport = generateHtmlReport(results);
     writeFileSync(join('coverage/functional-tests', 'report.html'), htmlReport);
+    // biome-ignore lint/suspicious/noConsole: Required for CLI output and test expectations
+    console.info(
+      'HTML report generated successfully at coverage/functional-tests/report.html'
+    );
   } catch (_error) {
     process.exit(1);
   }
