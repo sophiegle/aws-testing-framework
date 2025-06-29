@@ -34,33 +34,36 @@ export class TestDataGenerator {
     size: DataSize = 'small',
     options: TestDataOptions = {}
   ): string {
-    const correlationId = options.correlationId || this.generateCorrelationId();
-    const timestamp = options.timestamp || new Date();
+    // Handle null/undefined options
+    const safeOptions = options || {};
+    const correlationId =
+      safeOptions.correlationId || this.generateCorrelationId();
+    const timestamp = safeOptions.timestamp || new Date();
 
     switch (type) {
       case 'json':
         return this.generateJSONTestData(size, {
           correlationId,
           timestamp,
-          ...options,
+          ...safeOptions,
         });
       case 'csv':
         return this.generateCSVTestData(size, {
           correlationId,
           timestamp,
-          ...options,
+          ...safeOptions,
         });
       case 'xml':
         return this.generateXMLTestData(size, {
           correlationId,
           timestamp,
-          ...options,
+          ...safeOptions,
         });
       case 'text':
         return this.generateTextTestData(size, {
           correlationId,
           timestamp,
-          ...options,
+          ...safeOptions,
         });
       default:
         throw new Error(`Unsupported test data type: ${type}`);
