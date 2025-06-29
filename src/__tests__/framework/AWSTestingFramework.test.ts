@@ -1,20 +1,16 @@
 import {
-  CreateFunctionCommand,
   InvokeCommand,
   type InvokeCommandInput,
   LambdaClient,
   ListFunctionsCommand,
 } from '@aws-sdk/client-lambda';
 import {
-  CreateBucketCommand,
-  GetObjectCommand,
   HeadObjectCommand,
   ListBucketsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import {
-  CreateStateMachineCommand,
   DescribeExecutionCommand,
   DescribeStateMachineCommand,
   GetExecutionHistoryCommand,
@@ -24,12 +20,11 @@ import {
   StartExecutionCommand,
 } from '@aws-sdk/client-sfn';
 import {
-  CreateQueueCommand,
   GetQueueAttributesCommand,
   ListQueuesCommand,
   ReceiveMessageCommand,
-  SQSClient,
   SendMessageCommand,
+  SQSClient,
 } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';

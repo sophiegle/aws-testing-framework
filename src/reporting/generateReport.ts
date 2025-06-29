@@ -176,8 +176,6 @@ export function main() {
 
   const reportPath = join('coverage/functional-tests', 'cucumber-report.json');
   if (!existsSync(reportPath)) {
-    console.error('Error: No test report found at', reportPath);
-    console.error('Please run the tests first to generate the report.');
     process.exit(1);
   }
 
@@ -192,11 +190,7 @@ export function main() {
     const results = convertCucumberReportToResults(report);
     const htmlReport = generateHtmlReport(results);
     writeFileSync(join('coverage/functional-tests', 'report.html'), htmlReport);
-    console.info(
-      'HTML report generated successfully at coverage/functional-tests/report.html'
-    );
-  } catch (error) {
-    console.error('Error generating report:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }

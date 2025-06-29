@@ -1,4 +1,4 @@
-import { Given, Then, When } from '@cucumber/cucumber';
+import { Then } from '@cucumber/cucumber';
 import {
   AWSTestingFramework,
   type StepContext,

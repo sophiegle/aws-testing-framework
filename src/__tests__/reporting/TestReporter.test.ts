@@ -1,6 +1,5 @@
 import { EventEmitter } from 'node:events';
 import * as fs from 'node:fs';
-import path from 'node:path';
 import type { IFormatterOptions } from '@cucumber/cucumber';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { TestReporter } from '../../reporting/TestReporter';

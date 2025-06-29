@@ -3,21 +3,17 @@ import {
   FilterLogEventsCommand,
 } from '@aws-sdk/client-cloudwatch-logs';
 import {
-  CreateFunctionCommand,
-  GetFunctionCommand,
   InvokeCommand,
   LambdaClient,
   ListFunctionsCommand,
 } from '@aws-sdk/client-lambda';
 import {
-  CreateBucketCommand,
   HeadObjectCommand,
   ListBucketsCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import {
-  CreateStateMachineCommand,
   DescribeExecutionCommand,
   DescribeStateMachineCommand,
   GetExecutionHistoryCommand,
@@ -27,14 +23,12 @@ import {
   StartExecutionCommand,
 } from '@aws-sdk/client-sfn';
 import {
-  CreateQueueCommand,
   GetQueueAttributesCommand,
   ListQueuesCommand,
   ReceiveMessageCommand,
-  SQSClient,
   SendMessageCommand,
+  SQSClient,
 } from '@aws-sdk/client-sqs';
-import { Uint8ArrayBlobAdapter } from '@smithy/util-stream';
 import { TestReporter } from '../reporting/TestReporter';
 
 export interface AWSConfig {
@@ -218,7 +212,7 @@ export class AWSTestingFramework {
    */
   private log(
     level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
+    _message: string,
     data?: unknown
   ): void {
     if (!this.config.enableLogging) return;
@@ -229,12 +223,10 @@ export class AWSTestingFramework {
 
     if (messageLevel >= currentLevel) {
       const timestamp = new Date().toISOString();
-      const prefix = `[${timestamp}] [${level.toUpperCase()}] AWS Testing Framework:`;
+      const _prefix = `[${timestamp}] [${level.toUpperCase()}] AWS Testing Framework:`;
 
       if (data) {
-        console[level](`${prefix} ${message}`, data);
       } else {
-        console[level](`${prefix} ${message}`);
       }
     }
   }
@@ -398,11 +390,7 @@ export class AWSTestingFramework {
       // return logs.length > 0;
 
       return true;
-    } catch (error) {
-      console.warn(
-        `Error checking Lambda execution for ${functionName}:`,
-        error
-      );
+    } catch (_error) {
       return false;
     }
   }
@@ -492,11 +480,7 @@ export class AWSTestingFramework {
       // });
 
       return executions.length > 0;
-    } catch (error) {
-      console.warn(
-        `Error checking Step Function execution for ${stateMachineName}:`,
-        error
-      );
+    } catch (_error) {
       return false;
     }
   }
@@ -557,10 +541,6 @@ export class AWSTestingFramework {
 
       this.executionTracker.set(stateMachineName, executions);
     } catch (error) {
-      console.warn(
-        `Error tracking executions for state machine "${stateMachineName}":`,
-        error
-      );
       // Set empty array to avoid undefined errors
       this.executionTracker.set(stateMachineName, []);
       throw error; // Re-throw to let calling code handle it
@@ -1189,9 +1169,7 @@ export class AWSTestingFramework {
         if (result) {
           return;
         }
-      } catch (error) {
-        console.warn('Error checking condition:', error);
-      }
+      } catch (_error) {}
 
       await new Promise((resolve) => setTimeout(resolve, interval));
     }

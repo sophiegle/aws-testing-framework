@@ -1,13 +1,12 @@
 import {
   type DataSize,
   type DataType,
-  TestDataGenerator,
-  TestDataOptions,
   generateLambdaPayloadData,
   generateS3EventData,
   generateSQSMessageData,
   generateStepFunctionInputData,
   generateTestData,
+  TestDataGenerator,
 } from '../../utils/TestDataGenerator';
 
 describe('TestDataGenerator', () => {
