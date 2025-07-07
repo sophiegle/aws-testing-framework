@@ -19,191 +19,379 @@ import type {
   StepFunctionStateOutputVerification,
 } from '../types';
 
+/**
+ * Configuration for Step Function service operations
+ */
+export interface StepFunctionConfig {
+  /** Default timeout for operations in milliseconds */
+  defaultTimeoutMs: number;
+  /** Maximum number of executions to retrieve */
+  maxExecutionsToRetrieve: number;
+  /** Time window for considering executions as "recent" in milliseconds */
+  recentExecutionWindowMs: number;
+  /** Polling interval for waiting operations in milliseconds */
+  pollingIntervalMs: number;
+  /** Maximum retry attempts for failed operations */
+  maxRetryAttempts: number;
+  /** Whether to enable detailed logging */
+  enableLogging: boolean;
+}
+
+/**
+ * Default configuration for Step Function service
+ */
+export const DEFAULT_STEP_FUNCTION_CONFIG: StepFunctionConfig = {
+  defaultTimeoutMs: 30000,
+  maxExecutionsToRetrieve: 10,
+  recentExecutionWindowMs: 5 * 60 * 1000, // 5 minutes
+  pollingIntervalMs: 1000,
+  maxRetryAttempts: 3,
+  enableLogging: false,
+};
+
+/**
+ * Custom error class for Step Function operations
+ */
+export class StepFunctionError extends Error {
+  constructor(
+    message: string,
+    public readonly operation: string,
+    public readonly originalError?: Error
+  ) {
+    super(message);
+    this.name = 'StepFunctionError';
+  }
+}
+
 export class StepFunctionService {
   private sfnClient: SFNClient;
+  private config: StepFunctionConfig;
 
-  constructor(sfnClient: SFNClient) {
+  constructor(sfnClient: SFNClient, config?: Partial<StepFunctionConfig>) {
     this.sfnClient = sfnClient;
+    this.config = { ...DEFAULT_STEP_FUNCTION_CONFIG, ...config };
   }
 
-  async findStateMachine(stateMachineName: string): Promise<string> {
-    const command = new ListStateMachinesCommand({});
-    const response = await this.sfnClient.send(command);
-    const stateMachine = response.stateMachines?.find(
-      (sm) => sm.name === stateMachineName
-    );
+  /**
+   * Log message if logging is enabled
+   */
+  private log(
+    _message: string,
+    _level: 'debug' | 'info' | 'warn' | 'error' = 'info'
+  ): void {
+    if (this.config.enableLogging) {
+      const _timestamp = new Date().toISOString();
+    }
+  }
 
-    if (!stateMachine?.stateMachineArn) {
-      throw new Error(
-        `State machine "${stateMachineName}" not found. Available state machines: ${response.stateMachines?.map((sm) => sm.name).join(', ') || 'none'}`
-      );
+  /**
+   * Retry operation with exponential backoff
+   */
+  private async retryOperation<T>(
+    operation: () => Promise<T>,
+    operationName: string
+  ): Promise<T> {
+    let lastError: Error | undefined;
+
+    for (let attempt = 1; attempt <= this.config.maxRetryAttempts; attempt++) {
+      try {
+        this.log(
+          `Attempting ${operationName} (attempt ${attempt}/${this.config.maxRetryAttempts})`
+        );
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+        this.log(`Attempt ${attempt} failed: ${error}`, 'warn');
+
+        if (attempt < this.config.maxRetryAttempts) {
+          const delay = 2 ** (attempt - 1) * 1000; // Exponential backoff
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
     }
 
-    return stateMachine.stateMachineArn;
+    throw new StepFunctionError(
+      `Operation ${operationName} failed after ${this.config.maxRetryAttempts} attempts`,
+      operationName,
+      lastError
+    );
   }
 
+  /**
+   * Find state machine by name and return its ARN
+   * @param stateMachineName - Name of the state machine to find
+   * @returns Promise resolving to the state machine ARN
+   * @throws StepFunctionError if state machine is not found
+   */
+  async findStateMachine(stateMachineName: string): Promise<string> {
+    return this.retryOperation(async () => {
+      this.log(`Finding state machine: ${stateMachineName}`);
+
+      const command = new ListStateMachinesCommand({});
+      const response = await this.sfnClient.send(command);
+      const stateMachine = response.stateMachines?.find(
+        (sm) => sm.name === stateMachineName
+      );
+
+      if (!stateMachine?.stateMachineArn) {
+        const availableMachines =
+          response.stateMachines?.map((sm) => sm.name).join(', ') || 'none';
+        throw new StepFunctionError(
+          `State machine "${stateMachineName}" not found. Available state machines: ${availableMachines}`,
+          'findStateMachine'
+        );
+      }
+
+      this.log(`Found state machine: ${stateMachine.stateMachineArn}`);
+      return stateMachine.stateMachineArn;
+    }, 'findStateMachine');
+  }
+
+  /**
+   * Start a new Step Function execution
+   * @param stateMachineArn - ARN of the state machine to execute
+   * @param input - Input data for the execution
+   * @returns Promise resolving to the execution ARN
+   * @throws StepFunctionError if execution fails to start
+   */
   async startExecution(
     stateMachineArn: string,
     input: Record<string, unknown>
   ): Promise<string> {
-    const response = await this.sfnClient.send(
-      new StartExecutionCommand({
-        stateMachineArn,
-        input: JSON.stringify(input),
-      })
-    );
-    if (!response.executionArn) {
-      throw new Error('Failed to start execution: No execution ARN returned');
-    }
-    return response.executionArn;
+    return this.retryOperation(async () => {
+      this.log(`Starting execution for state machine: ${stateMachineArn}`);
+
+      const response = await this.sfnClient.send(
+        new StartExecutionCommand({
+          stateMachineArn,
+          input: JSON.stringify(input),
+        })
+      );
+
+      if (!response.executionArn) {
+        throw new StepFunctionError(
+          'Failed to start execution: No execution ARN returned',
+          'startExecution'
+        );
+      }
+
+      this.log(`Execution started: ${response.executionArn}`);
+      return response.executionArn;
+    }, 'startExecution');
   }
 
+  /**
+   * List recent executions for a state machine
+   * @param stateMachineName - Name of the state machine
+   * @returns Promise resolving to array of execution details
+   */
   async listExecutions(
     stateMachineName: string
-  ): Promise<Array<{ executionArn: string }>> {
-    const stateMachineArn = await this.findStateMachine(stateMachineName);
-    const response = await this.sfnClient.send(
-      new ListExecutionsCommand({
-        stateMachineArn,
-        maxResults: 1,
-      })
-    );
-    return (
-      response.executions?.map((execution) => ({
-        executionArn: execution.executionArn || '',
-      })) || []
-    );
+  ): Promise<
+    Array<{ executionArn: string; startDate?: Date; status?: string }>
+  > {
+    return this.retryOperation(async () => {
+      this.log(`Listing executions for state machine: ${stateMachineName}`);
+
+      const stateMachineArn = await this.findStateMachine(stateMachineName);
+      const response = await this.sfnClient.send(
+        new ListExecutionsCommand({
+          stateMachineArn,
+          maxResults: this.config.maxExecutionsToRetrieve,
+        })
+      );
+
+      const executions =
+        response.executions?.map((execution) => ({
+          executionArn: execution.executionArn || '',
+          startDate: execution.startDate,
+          status: execution.status,
+        })) || [];
+
+      this.log(`Found ${executions.length} executions`);
+      return executions;
+    }, 'listExecutions');
   }
 
+  /**
+   * Get the current status of an execution
+   * @param executionArn - ARN of the execution to check
+   * @returns Promise resolving to the execution status
+   */
   async getExecutionStatus(executionArn: string): Promise<string> {
-    const response = await this.sfnClient.send(
-      new DescribeExecutionCommand({
-        executionArn,
-      })
-    );
-    return response.status || '';
+    return this.retryOperation(async () => {
+      this.log(`Getting execution status: ${executionArn}`);
+
+      const response = await this.sfnClient.send(
+        new DescribeExecutionCommand({
+          executionArn,
+        })
+      );
+
+      const status = response.status || '';
+      this.log(`Execution status: ${status}`);
+      return status;
+    }, 'getExecutionStatus');
   }
 
   /**
    * Check if Step Function has been executed recently
+   * @param stateMachineName - Name of the state machine to check
+   * @returns Promise resolving to true if recent executions exist
    */
   async checkStateMachineExecution(stateMachineName: string): Promise<boolean> {
     try {
-      // Check for recent executions
+      this.log(`Checking for recent executions: ${stateMachineName}`);
+
       const executions = await this.listExecutions(stateMachineName);
       if (executions.length === 0) {
+        this.log('No executions found');
         return false;
       }
 
-      // Check if any execution started in the last 5 minutes
-      // In a real implementation, you would check the actual execution timestamps
-      // For now, we'll assume recent executions exist if the state machine is accessible
+      // Check for executions within the recent window
+      const recentExecutions = executions.filter((execution) => {
+        if (!execution.startDate) return false;
+        const executionTime = new Date(execution.startDate).getTime();
+        const cutoffTime = Date.now() - this.config.recentExecutionWindowMs;
+        return executionTime > cutoffTime;
+      });
 
-      // TODO: Implement proper Step Function execution checking with timestamps
-      // const recentExecutions = executions.filter((execution) => {
-      //   const executionTime = new Date(execution.startDate);
-      //   const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-      //   return executionTime.getTime() > fiveMinutesAgo;
-      // });
-
-      return executions.length > 0;
-    } catch (_error) {
+      const hasRecentExecutions = recentExecutions.length > 0;
+      this.log(`Found ${recentExecutions.length} recent executions`);
+      return hasRecentExecutions;
+    } catch (error) {
+      this.log(`Error checking state machine execution: ${error}`, 'error');
       return false;
     }
   }
 
   /**
    * Track executions for a specific state machine
+   * @param stateMachineName - Name of the state machine to track
+   * @returns Promise resolving to array of execution details
+   * @throws StepFunctionError if state machine is not found or invalid
    */
   async trackStateMachineExecutions(
     stateMachineName: string
   ): Promise<ExecutionDetails[]> {
-    const stateMachineArn = await this.findStateMachine(stateMachineName);
+    return this.retryOperation(async () => {
+      this.log(`Tracking executions for state machine: ${stateMachineName}`);
 
-    if (!stateMachineArn || stateMachineArn.trim() === '') {
-      throw new Error(
-        `Invalid state machine ARN for "${stateMachineName}": ${stateMachineArn}`
+      const stateMachineArn = await this.findStateMachine(stateMachineName);
+
+      if (!stateMachineArn || stateMachineArn.trim() === '') {
+        throw new StepFunctionError(
+          `Invalid state machine ARN for "${stateMachineName}": ${stateMachineArn}`,
+          'trackStateMachineExecutions'
+        );
+      }
+
+      const response = await this.sfnClient.send(
+        new ListExecutionsCommand({
+          stateMachineArn,
+          maxResults: this.config.maxExecutionsToRetrieve,
+        })
       );
-    }
 
-    const response = await this.sfnClient.send(
-      new ListExecutionsCommand({
-        stateMachineArn,
-        maxResults: 10,
-      })
-    );
+      const executions: ExecutionDetails[] = [];
 
-    const executions: ExecutionDetails[] = [];
+      // Get full details for each execution including input/output
+      for (const execution of response.executions || []) {
+        if (execution.executionArn) {
+          try {
+            const executionDetails = await this.sfnClient.send(
+              new DescribeExecutionCommand({
+                executionArn: execution.executionArn,
+              })
+            );
 
-    // Get full details for each execution including input/output
-    for (const execution of response.executions || []) {
-      if (execution.executionArn) {
-        try {
-          const executionDetails = await this.sfnClient.send(
-            new DescribeExecutionCommand({
+            executions.push({
               executionArn: execution.executionArn,
-            })
-          );
-
-          executions.push({
-            executionArn: execution.executionArn,
-            stateMachineArn: execution.stateMachineArn || '',
-            status: execution.status || '',
-            startDate: execution.startDate || new Date(),
-            stopDate: execution.stopDate,
-            input: executionDetails.input,
-            output: executionDetails.output,
-          });
-        } catch (_error) {
-          // Fallback to basic details
-          executions.push({
-            executionArn: execution.executionArn,
-            stateMachineArn: execution.stateMachineArn || '',
-            status: execution.status || '',
-            startDate: execution.startDate || new Date(),
-            stopDate: execution.stopDate,
-          });
+              stateMachineArn: execution.stateMachineArn || '',
+              status: execution.status || '',
+              startDate: execution.startDate || new Date(),
+              stopDate: execution.stopDate,
+              input: executionDetails.input,
+              output: executionDetails.output,
+            });
+          } catch (error) {
+            this.log(
+              `Failed to get details for execution ${execution.executionArn}: ${error}`,
+              'warn'
+            );
+            // Fallback to basic details
+            executions.push({
+              executionArn: execution.executionArn,
+              stateMachineArn: execution.stateMachineArn || '',
+              status: execution.status || '',
+              startDate: execution.startDate || new Date(),
+              stopDate: execution.stopDate,
+            });
+          }
         }
       }
-    }
 
-    return executions;
+      this.log(`Tracked ${executions.length} executions`);
+      return executions;
+    }, 'trackStateMachineExecutions');
   }
 
   /**
    * Verify that a specific state machine was triggered by checking recent executions
+   * @param expectedStateMachineName - Name of the state machine to verify
+   * @param timeoutMs - Timeout for the verification in milliseconds
+   * @returns Promise resolving to true if state machine was triggered
    */
   async verifyStateMachineTriggered(
     expectedStateMachineName: string,
     timeoutMs = 30000
   ): Promise<boolean> {
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < timeoutMs) {
-      const executions = await this.trackStateMachineExecutions(
-        expectedStateMachineName
+    try {
+      this.log(
+        `Verifying state machine triggered: ${expectedStateMachineName} (timeout: ${timeoutMs}ms)`
       );
 
-      // Check if there are any recent executions (within the last 5 minutes)
-      const recentExecutions = executions.filter((execution) => {
-        const executionTime = new Date(execution.startDate).getTime();
-        const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-        return executionTime > fiveMinutesAgo;
-      });
+      const startTime = Date.now();
+      const timeout = timeoutMs || this.config.defaultTimeoutMs;
 
-      if (recentExecutions.length > 0) {
-        return true;
+      while (Date.now() - startTime < timeout) {
+        const executions = await this.trackStateMachineExecutions(
+          expectedStateMachineName
+        );
+
+        // Check if there are any recent executions within the configured window
+        const recentExecutions = executions.filter((execution) => {
+          const executionTime = new Date(execution.startDate).getTime();
+          const cutoffTime = Date.now() - this.config.recentExecutionWindowMs;
+          return executionTime > cutoffTime;
+        });
+
+        if (recentExecutions.length > 0) {
+          this.log(
+            `State machine triggered: found ${recentExecutions.length} recent executions`
+          );
+          return true;
+        }
+
+        // Wait before checking again
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.config.pollingIntervalMs)
+        );
       }
 
-      // Wait before checking again
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      this.log('State machine not triggered within timeout period');
+      return false;
+    } catch (error) {
+      this.log(`Error verifying state machine trigger: ${error}`, 'error');
+      return false;
     }
-
-    return false;
   }
 
   /**
    * Get detailed Step Function execution history with state transitions
+   * @param executionArn - ARN of the execution to get history for
+   * @returns Promise resolving to array of execution history events
    */
   async getStepFunctionExecutionHistory(executionArn: string): Promise<
     Array<{
@@ -216,12 +404,14 @@ export class StepFunctionService {
       taskFailedEventDetails?: Record<string, unknown>;
     }>
   > {
-    try {
+    return this.retryOperation(async () => {
+      this.log(`Getting execution history: ${executionArn}`);
+
       const response = await this.sfnClient.send(
         new GetExecutionHistoryCommand({ executionArn })
       );
 
-      return (
+      const events =
         response.events?.map((event) => ({
           timestamp: event.timestamp || new Date(),
           type: event.type || '',
@@ -241,21 +431,28 @@ export class StepFunctionService {
           taskFailedEventDetails: event.taskFailedEventDetails as
             | Record<string, unknown>
             | undefined,
-        })) || []
-      );
-    } catch (_error) {
-      return [];
-    }
+        })) || [];
+
+      this.log(`Retrieved ${events.length} history events`);
+      return events;
+    }, 'getStepFunctionExecutionHistory');
   }
 
   /**
    * Verify Step Function execution completed successfully with all expected states
+   * @param executionArn - ARN of the execution to verify
+   * @param expectedStates - Array of expected state names to verify completion
+   * @returns Promise resolving to execution result with success status and details
    */
   async verifyStepFunctionExecutionSuccess(
     executionArn: string,
     expectedStates: string[] = []
   ): Promise<StepFunctionExecutionResult> {
     try {
+      this.log(
+        `Verifying execution success: ${executionArn} (expected states: ${expectedStates.join(', ')})`
+      );
+
       const history = await this.getStepFunctionExecutionHistory(executionArn);
       const completedStates: string[] = [];
       const failedStates: string[] = [];
@@ -287,13 +484,18 @@ export class StepFunctionService {
         (expectedStates.length === 0 ||
           expectedStates.every((state) => completedStates.includes(state)));
 
+      this.log(
+        `Execution verification result: success=${success}, completed=${completedStates.length}, failed=${failedStates.length}, time=${executionTime}ms`
+      );
+
       return {
         success,
         completedStates,
         failedStates,
         executionTime,
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error verifying execution success: ${error}`, 'error');
       return {
         success: false,
         completedStates: [],
@@ -305,11 +507,15 @@ export class StepFunctionService {
 
   /**
    * Check Step Function execution performance metrics
+   * @param executionArn - ARN of the execution to analyze
+   * @returns Promise resolving to performance metrics
    */
   async checkStepFunctionPerformance(
     executionArn: string
   ): Promise<StepFunctionPerformance> {
     try {
+      this.log(`Checking performance metrics: ${executionArn}`);
+
       const history = await this.getStepFunctionExecutionHistory(executionArn);
       const stateExecutionTimes: { [stateName: string]: number } = {};
       let totalTime = 0;
@@ -354,13 +560,18 @@ export class StepFunctionService {
           ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length
           : 0;
 
+      this.log(
+        `Performance analysis: total=${totalTime}ms, avg=${averageTime}ms, slowest=${slowestState}, fastest=${fastestState}`
+      );
+
       return {
         totalExecutionTime: totalTime,
         averageStateExecutionTime: averageTime,
         slowestState,
         fastestState,
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error checking performance metrics: ${error}`, 'error');
       return {
         totalExecutionTime: 0,
         averageStateExecutionTime: 0,
@@ -372,11 +583,15 @@ export class StepFunctionService {
 
   /**
    * Verify Step Function state machine definition is valid
+   * @param stateMachineName - Name of the state machine to verify
+   * @returns Promise resolving to definition validation result
    */
   async verifyStepFunctionDefinition(
     stateMachineName: string
   ): Promise<StepFunctionDefinition> {
     try {
+      this.log(`Verifying state machine definition: ${stateMachineName}`);
+
       const stateMachineArn = await this.findStateMachine(stateMachineName);
       const response = await this.sfnClient.send(
         new DescribeStateMachineCommand({ stateMachineArn })
@@ -405,32 +620,45 @@ export class StepFunctionService {
           states[stateName].Type === 'Fail'
       );
 
+      const isValid = errors.length === 0;
+      this.log(
+        `Definition validation: valid=${isValid}, states=${stateNames.length}, errors=${errors.length}`
+      );
+
       return {
-        isValid: errors.length === 0,
+        isValid,
         hasStartState: !!definition.StartAt,
         hasEndStates,
         stateCount: stateNames.length,
         errors,
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error verifying state machine definition: ${error}`, 'error');
       return {
         isValid: false,
         hasStartState: false,
         hasEndStates: false,
         stateCount: 0,
-        errors: [`Error parsing definition: ${_error}`],
+        errors: [`Error parsing definition: ${error}`],
       };
     }
   }
 
   /**
    * Get Step Function state output for specific states
+   * @param executionArn - ARN of the execution to analyze
+   * @param stateName - Optional specific state name to filter by
+   * @returns Promise resolving to array of state outputs
    */
   async getStepFunctionStateOutput(
     executionArn: string,
     stateName?: string
   ): Promise<StepFunctionStateOutput[]> {
     try {
+      this.log(
+        `Getting state output: ${executionArn}${stateName ? ` (state: ${stateName})` : ''}`
+      );
+
       const history = await this.getStepFunctionExecutionHistory(executionArn);
       const stateOutputs: StepFunctionStateOutput[] = [];
 
@@ -477,14 +705,20 @@ export class StepFunctionService {
         }
       }
 
+      this.log(`Retrieved ${stateOutputs.length} state outputs`);
       return stateOutputs;
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error getting state output: ${error}`, 'error');
       return [];
     }
   }
 
   /**
    * Verify Step Function state output contains expected data
+   * @param executionArn - ARN of the execution to verify
+   * @param stateName - Name of the state to verify output for
+   * @param expectedOutput - Expected output data to verify against
+   * @returns Promise resolving to verification result
    */
   async verifyStepFunctionStateOutput(
     executionArn: string,
@@ -492,6 +726,8 @@ export class StepFunctionService {
     expectedOutput: Record<string, unknown>
   ): Promise<StepFunctionStateOutputVerification> {
     try {
+      this.log(`Verifying state output: ${executionArn} (state: ${stateName})`);
+
       const stateOutputs = await this.getStepFunctionStateOutput(
         executionArn,
         stateName
@@ -501,6 +737,7 @@ export class StepFunctionService {
       );
 
       if (!stateOutput) {
+        this.log(`State output not found for state: ${stateName}`);
         return {
           matches: false,
           actualOutput: {},
@@ -527,13 +764,19 @@ export class StepFunctionService {
         }
       }
 
+      const matches = missingFields.length === 0;
+      this.log(
+        `State output verification: matches=${matches}, missing=${missingFields.length}, extra=${extraFields.length}`
+      );
+
       return {
-        matches: missingFields.length === 0,
+        matches,
         actualOutput,
         missingFields,
         extraFields,
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error verifying state output: ${error}`, 'error');
       return {
         matches: false,
         actualOutput: {},
@@ -545,11 +788,15 @@ export class StepFunctionService {
 
   /**
    * Get Step Function execution data flow analysis
+   * @param executionArn - ARN of the execution to analyze
+   * @returns Promise resolving to data flow analysis result
    */
   async getStepFunctionDataFlow(
     executionArn: string
   ): Promise<StepFunctionDataFlow> {
     try {
+      this.log(`Analyzing data flow: ${executionArn}`);
+
       const history = await this.getStepFunctionExecutionHistory(executionArn);
       const dataFlow: Array<{
         fromState: string;
@@ -624,12 +871,17 @@ export class StepFunctionService {
         }
       }
 
+      this.log(
+        `Data flow analysis: flows=${dataFlow.length}, dataLoss=${dataLoss}, dataCorruption=${dataCorruption}`
+      );
+
       return {
         dataFlow,
         dataLoss,
         dataCorruption,
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error analyzing data flow: ${error}`, 'error');
       return {
         dataFlow: [],
         dataLoss: false,
@@ -640,12 +892,17 @@ export class StepFunctionService {
 
   /**
    * Verify Step Function execution meets performance SLAs
+   * @param executionArn - ARN of the execution to verify
+   * @param slas - SLA requirements to verify against
+   * @returns Promise resolving to SLA verification result
    */
   async verifyStepFunctionSLAs(
     executionArn: string,
     slas: StepFunctionSLAs
   ): Promise<StepFunctionSLAVerification> {
     try {
+      this.log(`Verifying SLAs: ${executionArn}`);
+
       const performance = await this.checkStepFunctionPerformance(executionArn);
       const violations: string[] = [];
 
@@ -677,8 +934,13 @@ export class StepFunctionService {
         );
       }
 
+      const meetsSLAs = violations.length === 0;
+      this.log(
+        `SLA verification: meetsSLAs=${meetsSLAs}, violations=${violations.length}`
+      );
+
       return {
-        meetsSLAs: violations.length === 0,
+        meetsSLAs,
         violations,
         metrics: {
           totalExecutionTime: performance.totalExecutionTime,
@@ -686,10 +948,11 @@ export class StepFunctionService {
           coldStartTime,
         },
       };
-    } catch (_error) {
+    } catch (error) {
+      this.log(`Error verifying SLAs: ${error}`, 'error');
       return {
         meetsSLAs: false,
-        violations: [`Error verifying SLAs: ${_error}`],
+        violations: [`Error verifying SLAs: ${error}`],
         metrics: {
           totalExecutionTime: 0,
           maxStateExecutionTime: 0,

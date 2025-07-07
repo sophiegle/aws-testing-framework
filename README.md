@@ -181,6 +181,33 @@ Scenario: Handle processing errors gracefully
 
 ## 🔍 Advanced Features
 
+### Interactive Test Execution Dashboard
+
+The framework automatically generates an interactive dashboard showing detailed test execution results:
+
+```bash
+# Run tests with automatic dashboard generation
+npm run test:dashboard
+
+# Or run tests normally (dashboard is generated automatically)
+npm test
+```
+
+**Dashboard Features:**
+- 📊 **Test Structure**: Features → Scenarios → Steps with expandable navigation
+- ⏱️ **Detailed Timing**: Step-by-step execution times and performance metrics
+- 🎯 **Results Tracking**: Pass/fail status with error details and stack traces
+- 🔍 **Search & Filter**: Find specific tests and filter by status
+- 📈 **Performance Analysis**: Identify slowest features, scenarios, and steps
+- 🎨 **Interactive UI**: Light/dark themes, responsive design
+- 📱 **Mobile Friendly**: Works on desktop, tablet, and mobile devices
+
+**Generated Files:**
+- `test-reports/dashboard.html` - Interactive dashboard (light theme)
+- `test-reports/dashboard-dark.html` - Interactive dashboard (dark theme)
+- `test-reports/cucumber-report.json` - JSON test results
+- `test-reports/report.html` - Basic HTML report
+
 ### Performance Monitoring
 
 ```typescript

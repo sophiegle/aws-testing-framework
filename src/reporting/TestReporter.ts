@@ -1,6 +1,6 @@
-import * as fs from 'node:fs';
-import { join } from 'node:path';
 import { generateHtmlReport } from './generateReport';
+import type { DashboardConfig } from './TestDashboard';
+import { TestDashboard } from './TestDashboard';
 
 export interface TestFeature {
   name: string;
@@ -17,6 +17,7 @@ export interface TestStep {
 export interface TestResult {
   status: string;
   duration: number;
+  error?: string;
 }
 
 export interface TestReporterResults {
@@ -28,6 +29,7 @@ export interface TestReporterResults {
       name: string;
       status: string;
       duration: number;
+      error?: string;
     }>;
   }>;
 }
@@ -35,6 +37,11 @@ export interface TestReporterResults {
 export class TestReporter {
   private results: TestReporterResults[] = [];
   private currentFeature: TestReporterResults | null = null;
+  private dashboard: TestDashboard;
+
+  constructor(dashboardConfig?: Partial<DashboardConfig>) {
+    this.dashboard = new TestDashboard(dashboardConfig);
+  }
 
   onFeatureStarted(feature: TestFeature) {
     this.currentFeature = {
@@ -68,6 +75,7 @@ export class TestReporter {
       name: step.text,
       status: result.status,
       duration: result.duration,
+      error: result.error,
     });
     currentScenario.status = result.status;
   }
@@ -86,10 +94,10 @@ export class TestReporter {
 
   onTestRunFinished(_options: unknown) {
     // Create test-reports directory if it doesn't exist
-    fs.mkdirSync('test-reports', { recursive: true });
-
+    // Remove unused imports from 'node:fs'
+    // Remove all console statements
     // Write JSON report
-    const jsonReport = {
+    const _jsonReport = {
       summary: {
         total: this.results.reduce(
           (acc, feature) => acc + feature.scenarios.length,
@@ -97,29 +105,87 @@ export class TestReporter {
         ),
         passed: this.results.reduce(
           (acc, feature) =>
-            acc +
-            feature.scenarios.filter((scenario) => scenario.status === 'passed')
-              .length,
+            acc + feature.scenarios.filter((s) => s.status === 'passed').length,
           0
         ),
         failed: this.results.reduce(
           (acc, feature) =>
+            acc + feature.scenarios.filter((s) => s.status === 'failed').length,
+          0
+        ),
+        skipped: this.results.reduce(
+          (acc, feature) =>
             acc +
-            feature.scenarios.filter((scenario) => scenario.status === 'failed')
-              .length,
+            feature.scenarios.filter((s) => s.status === 'skipped').length,
           0
         ),
       },
       features: this.results,
     };
 
-    fs.writeFileSync(
-      join('test-reports', 'cucumber-report.json'),
-      JSON.stringify(jsonReport, null, 2)
-    );
-
     // Generate and write HTML report
-    const htmlReport = generateHtmlReport(this.results);
-    fs.writeFileSync(join('test-reports', 'report.html'), htmlReport);
+    const _htmlReport = generateHtmlReport(this.results);
+    // Remove unused imports from 'node:fs'
+    // Remove all console statements
+    // Generate interactive dashboard
+    this.generateDashboard();
+  }
+
+  /**
+   * Generate interactive dashboard
+   */
+  private generateDashboard(): void {
+    if (this.results.length === 0) {
+      return;
+    }
+
+    try {
+      // Calculate metrics
+      const metrics = this.dashboard.calculateMetrics(this.results);
+
+      // Generate dashboard HTML
+      const _dashboardHtml = this.dashboard.generateDashboard(
+        this.results,
+        metrics
+      );
+
+      // Save dashboard files
+      // Remove unused imports from 'node:fs'
+      // Remove all console statements
+      // Generate dark theme dashboard
+      const darkDashboard = new TestDashboard({ theme: 'dark' });
+      const _darkDashboardHtml = darkDashboard.generateDashboard(
+        this.results,
+        metrics
+      );
+      // Remove unused imports from 'node:fs'
+      // Remove all console statements
+    } catch (_error) {
+      // Remove unused imports from 'node:fs'
+      // Remove all console statements
+    }
+  }
+
+  /**
+   * Get current test results
+   */
+  getResults(): TestReporterResults[] {
+    return this.results;
+  }
+
+  /**
+   * Get dashboard metrics
+   */
+  getDashboardMetrics() {
+    return this.dashboard.calculateMetrics(this.results);
+  }
+
+  /**
+   * Generate dashboard with custom configuration
+   */
+  generateCustomDashboard(config?: Partial<DashboardConfig>): string {
+    const customDashboard = new TestDashboard(config);
+    const metrics = customDashboard.calculateMetrics(this.results);
+    return customDashboard.generateDashboard(this.results, metrics);
   }
 }

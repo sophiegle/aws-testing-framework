@@ -31,6 +31,9 @@ export interface StepContext {
   expectedStateMachineName?: string;
   uploadedFileName?: string;
   uploadedFileContent?: string;
+  lastError?: Error;
+  loggingEnabled?: boolean;
+  customConfiguration?: boolean;
 }
 
 export interface ExecutionDetails {
