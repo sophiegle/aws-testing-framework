@@ -1,3 +1,5 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { generateHtmlReport } from './generateReport';
 import type { DashboardConfig } from './TestDashboard';
 import { TestDashboard } from './TestDashboard';
@@ -94,10 +96,13 @@ export class TestReporter {
 
   onTestRunFinished(_options: unknown) {
     // Create test-reports directory if it doesn't exist
-    // Remove unused imports from 'node:fs'
-    // Remove all console statements
+    const reportsDir = 'test-reports';
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
     // Write JSON report
-    const _jsonReport = {
+    const jsonReport = {
       summary: {
         total: this.results.reduce(
           (acc, feature) => acc + feature.scenarios.length,
@@ -123,10 +128,15 @@ export class TestReporter {
       features: this.results,
     };
 
+    fs.writeFileSync(
+      path.join(reportsDir, 'cucumber-report.json'),
+      JSON.stringify(jsonReport, null, 2)
+    );
+
     // Generate and write HTML report
-    const _htmlReport = generateHtmlReport(this.results);
-    // Remove unused imports from 'node:fs'
-    // Remove all console statements
+    const htmlReport = generateHtmlReport(this.results);
+    fs.writeFileSync(path.join(reportsDir, 'report.html'), htmlReport);
+
     // Generate interactive dashboard
     this.generateDashboard();
   }
@@ -144,25 +154,27 @@ export class TestReporter {
       const metrics = this.dashboard.calculateMetrics(this.results);
 
       // Generate dashboard HTML
-      const _dashboardHtml = this.dashboard.generateDashboard(
+      const dashboardHtml = this.dashboard.generateDashboard(
         this.results,
         metrics
       );
 
       // Save dashboard files
-      // Remove unused imports from 'node:fs'
-      // Remove all console statements
+      const reportsDir = 'test-reports';
+      fs.writeFileSync(path.join(reportsDir, 'dashboard.html'), dashboardHtml);
+
       // Generate dark theme dashboard
       const darkDashboard = new TestDashboard({ theme: 'dark' });
-      const _darkDashboardHtml = darkDashboard.generateDashboard(
+      const darkDashboardHtml = darkDashboard.generateDashboard(
         this.results,
         metrics
       );
-      // Remove unused imports from 'node:fs'
-      // Remove all console statements
+      fs.writeFileSync(
+        path.join(reportsDir, 'dashboard-dark.html'),
+        darkDashboardHtml
+      );
     } catch (_error) {
-      // Remove unused imports from 'node:fs'
-      // Remove all console statements
+      // Error generating dashboard - silently fail
     }
   }
 

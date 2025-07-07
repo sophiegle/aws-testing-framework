@@ -8,6 +8,7 @@ import { TestReporter } from '../../reporting/TestReporter';
 jest.mock('node:fs', () => ({
   mkdirSync: jest.fn(),
   writeFileSync: jest.fn(),
+  existsSync: jest.fn(() => false),
 }));
 
 // Mock path module
