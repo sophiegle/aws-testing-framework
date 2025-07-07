@@ -64,7 +64,7 @@ Given(
 // ============================================================================
 
 When(
-  /^(?:I try to )?start a Step Function execution with input "([^"]+)"$/,
+  /^I start a Step Function execution with input "([^"]+)"$/,
   async function (this: StepContext, input: string) {
     const stateMachineArn = requireStateMachineArn(this);
 
