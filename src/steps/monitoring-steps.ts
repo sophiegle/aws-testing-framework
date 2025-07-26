@@ -40,7 +40,7 @@ Then(
   'the S3 bucket {string} should be accessible',
   async function (this: StepContext, bucketName: string) {
     try {
-      await framework.findBucket(bucketName);
+      await framework.s3Service.findBucket(bucketName);
     } catch (error) {
       throw new Error(
         `S3 bucket ${bucketName} is not accessible: ${error instanceof Error ? error.message : String(error)}`

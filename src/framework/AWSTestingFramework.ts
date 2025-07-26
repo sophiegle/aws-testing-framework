@@ -35,13 +35,13 @@ export class AWSTestingFramework {
   private cloudWatchLogsClient: CloudWatchLogsClient;
 
   // Service classes
-  private s3Service: S3Service;
-  private sqsService: SQSService;
-  private lambdaService: LambdaService;
-  private stepFunctionService: StepFunctionService;
-  private performanceMonitor: PerformanceMonitor;
-  private stepContextManager: StepContextManager;
-  private healthValidator: HealthValidator;
+  public s3Service: S3Service;
+  public sqsService: SQSService;
+  public lambdaService: LambdaService;
+  public stepFunctionService: StepFunctionService;
+  public performanceMonitor: PerformanceMonitor;
+  public stepContextManager: StepContextManager;
+  public healthValidator: HealthValidator;
 
   // Framework components
   private reporter: TestReporter;
@@ -182,33 +182,6 @@ export class AWSTestingFramework {
       }
     }
   }
-
-  //#region S3 Operations (delegated to S3Service)
-  async findBucket(bucketName: string): Promise<void> {
-    await this.s3Service.findBucket(bucketName);
-    this.log('info', `Found S3 bucket: ${bucketName}`);
-  }
-
-  async uploadFile(
-    bucketName: string,
-    fileName: string,
-    content: string
-  ): Promise<void> {
-    await this.s3Service.uploadFile(bucketName, fileName, content);
-    this.log('info', `Uploaded file ${fileName} to bucket ${bucketName}`);
-  }
-
-  async checkFileExists(
-    bucketName: string,
-    fileName: string
-  ): Promise<boolean> {
-    const exists = await this.s3Service.checkFileExists(bucketName, fileName);
-    if (!exists) {
-      this.log('debug', `File ${fileName} not found in bucket ${bucketName}`);
-    }
-    return exists;
-  }
-  //#endregion
 
   //#region SQS Operations (delegated to SQSService)
   async findQueue(queueName: string): Promise<string> {

@@ -8,6 +8,7 @@ Feature: S3 to Lambda Integration via SQS
     And I have an SQS queue named "afti-queue"
     And I have a Lambda function named "afti-lambda-function"
     When I upload a file "test.txt" to the S3 bucket
+    Then the S3 bucket should contain the file "test.txt"
     Then the Lambda function should be triggered
 
   Scenario: Upload file executes a state machine

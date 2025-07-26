@@ -9,7 +9,7 @@ Given(
   'I have an S3 bucket named {string}',
   async function (this: StepContext, bucketName: string) {
     this.bucketName = bucketName;
-    await framework.findBucket(bucketName);
+    await framework.s3Service.findBucket(bucketName);
   }
 );
 
@@ -25,7 +25,11 @@ When(
     this.uploadedFileName = fileName;
     this.uploadedFileContent = 'Test content';
 
-    await framework.uploadFile(this.bucketName, fileName, 'Test content');
+    await framework.s3Service.uploadFile(
+      this.bucketName,
+      fileName,
+      'Test content'
+    );
 
     // Add a small delay to allow S3 event notification to propagate
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -42,7 +46,10 @@ Then(
     }
     await framework.waitForCondition(async () => {
       if (!this.bucketName) return false;
-      const exists = await framework.checkFileExists(this.bucketName, fileName);
+      const exists = await framework.s3Service.checkFileExists(
+        this.bucketName,
+        fileName
+      );
       return exists;
     });
   }
@@ -60,7 +67,7 @@ When(
     this.uploadedFileName = fileName;
     this.uploadedFileContent = content;
 
-    await framework.uploadFile(this.bucketName, fileName, content);
+    await framework.s3Service.uploadFile(this.bucketName, fileName, content);
 
     // Add a small delay to allow S3 event notification to propagate
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -83,7 +90,11 @@ When(
     ];
 
     for (const file of files) {
-      await framework.uploadFile(this.bucketName, file.name, file.content);
+      await framework.s3Service.uploadFile(
+        this.bucketName,
+        file.name,
+        file.content
+      );
 
       // Wait a bit between uploads to avoid overwhelming the system
       await new Promise((resolve) => setTimeout(resolve, 1000));
