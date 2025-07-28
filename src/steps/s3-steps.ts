@@ -101,3 +101,34 @@ When(
     }
   }
 );
+
+When(
+  'I upload many files to the S3 bucket',
+  async function (this: StepContext) {
+    if (!this.bucketName) {
+      throw new Error(
+        'Bucket name is not set. Make sure to create an S3 bucket first.'
+      );
+    }
+
+    // Upload 10 files to trigger multiple Lambda executions
+    const files = [];
+    for (let i = 1; i <= 10; i++) {
+      files.push({
+        name: `load-test-${i}.json`,
+        content: JSON.stringify({ id: i, data: `load-test-${i}`, timestamp: Date.now() })
+      });
+    }
+
+    for (const file of files) {
+      await framework.s3Service.uploadFile(
+        this.bucketName,
+        file.name,
+        file.content
+      );
+
+      // Small delay between uploads to allow Lambda processing
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+);

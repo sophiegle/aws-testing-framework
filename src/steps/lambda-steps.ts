@@ -3,13 +3,14 @@ import type { StepContext } from '../framework/types';
 import { AWSTestingFramework } from '../index';
 
 const framework = new AWSTestingFramework();
+const lambdaService = framework.lambdaService;
 
 // Basic Lambda operations
 Given(
   'I have a Lambda function named {string}',
   async function (this: StepContext, functionName: string) {
     this.functionName = functionName;
-    await framework.findFunction(functionName);
+    await lambdaService.findFunction(functionName);
   }
 );
 
@@ -21,7 +22,7 @@ When(
         'Function name is not set. Make sure to create a Lambda function first.'
       );
     }
-    await framework.invokeFunction(this.functionName, JSON.parse(payload));
+    await lambdaService.invokeFunction(this.functionName, JSON.parse(payload));
   }
 );
 
@@ -35,26 +36,8 @@ Then(
     }
     await framework.waitForCondition(async () => {
       if (!this.functionName) return false;
-      const result = await framework.invokeFunction(this.functionName, {});
+      const result = await lambdaService.invokeFunction(this.functionName, {});
       return result?.Payload === expectedResult;
-    });
-  }
-);
-
-Then(
-  'the Lambda function should be triggered',
-  async function (this: StepContext) {
-    if (!this.functionName) {
-      throw new Error(
-        'Function name is not set. Make sure to create a Lambda function first.'
-      );
-    }
-    await framework.waitForCondition(async () => {
-      if (!this.functionName) return false;
-      const lambdaTriggered = await framework.checkLambdaExecution(
-        this.functionName
-      );
-      return lambdaTriggered;
     });
   }
 );
@@ -70,7 +53,7 @@ Then(
 
     await framework.waitForCondition(async () => {
       if (!this.functionName) return false;
-      const lambdaTriggered = await framework.checkLambdaExecution(
+      const lambdaTriggered = await lambdaService.checkLambdaExecution(
         this.functionName
       );
       return lambdaTriggered;
@@ -79,23 +62,52 @@ Then(
 );
 
 Then(
-  'the Lambda function should be invoked multiple times',
-  async function (this: StepContext) {
+  'the Lambda function should be invoked {int} times within {int} minutes',
+  async function (this: StepContext, expectedCount: number, minutes: number) {
     if (!this.functionName) {
       throw new Error(
         'Function name is not set. Make sure to create a Lambda function first.'
       );
     }
 
-    // Wait a bit for all invocations to complete
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await framework.waitForCondition(async () => {
+      if (!this.functionName) return false;
+      const actualCount = await framework.countLambdaExecutionsInLastMinutes(
+        this.functionName,
+        minutes
+      );
+      return actualCount >= expectedCount;
+    }, 60000); // Wait up to 1 minute for the condition to be met
+  }
+);
 
-    // Check that the Lambda function was invoked at least once
-    const lambdaTriggered = await framework.checkLambdaExecution(
-      this.functionName
-    );
-    if (!lambdaTriggered) {
-      throw new Error('Lambda function was not invoked');
+// Additional step for triggering multiple concurrent operations
+When(
+  'I trigger multiple concurrent operations',
+  async function (this: StepContext) {
+    if (!this.bucketName) {
+      throw new Error(
+        'Bucket name is not set. Make sure to create an S3 bucket first.'
+      );
+    }
+
+    // Upload multiple files concurrently to trigger Lambda executions
+    const files = [
+      { name: 'concurrent1.txt', content: 'test data 1' },
+      { name: 'concurrent2.txt', content: 'test data 2' },
+      { name: 'concurrent3.txt', content: 'test data 3' },
+      { name: 'concurrent4.txt', content: 'test data 4' },
+      { name: 'concurrent5.txt', content: 'test data 5' }
+    ];
+
+    for (const file of files) {
+      await framework.s3Service.uploadFile(
+        this.bucketName,
+        file.name,
+        file.content
+      );
+      // Small delay between uploads
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
 );

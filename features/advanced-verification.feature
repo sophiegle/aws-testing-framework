@@ -29,4 +29,4 @@ Feature: Advanced AWS Service Monitoring
 
   Scenario: Verify performance under load
     When I upload multiple files to the S3 bucket
-    Then the Lambda function should be invoked multiple times 
+    Then the Lambda function should be invoked

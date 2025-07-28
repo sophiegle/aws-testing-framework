@@ -5,14 +5,14 @@
 [![Node.js CI](https://github.com/sophiegle/aws-testing-framework/actions/workflows/test.yml/badge.svg)](https://github.com/sophiegle/aws-testing-framework/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/sophiegle/aws-testing-framework/branch/main/graph/badge.svg)](https://codecov.io/gh/sophiegle/aws-testing-framework/branch/main/graph/badge.svg)
 
-A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serverless architectures and workflows. Built with TypeScript and Cucumber, this framework enables end-to-end testing of complex AWS service interactions including S3, SQS, Lambda, and Step Functions.
-
-**Note: This project is in its early stages and as such is not as stable or functionally comprehensive as I'd like! Feel free to raise issues and contribute in order to improve the package**
+A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serverless architectures and workflows. Built with TypeScript and Cucumber, this framework enables end-to-end testing of complex AWS service interactions including S3, SQS, Lambda, and Step Functions with real CloudWatch log verification.
 
 ## 🚀 Features
 
 - **🔗 End-to-End Testing**: Test complete serverless workflows from S3 uploads to Step Function executions
-- **📊 Advanced Monitoring**: CloudWatch logs analysis, performance metrics, and SLA verification
+- **📊 Real CloudWatch Verification**: Actual Lambda execution verification using CloudWatch logs (not just function existence)
+- **🔢 Lambda Execution Counting**: Verify specific execution counts within time periods (e.g., "5 times within 5 minutes")
+- **📈 Advanced Monitoring**: CloudWatch logs analysis, performance metrics, and SLA verification
 - **🔄 Retry Logic**: Built-in retry mechanisms for handling AWS service eventual consistency
 - **📈 Comprehensive Reporting**: HTML, JSON, and custom test reports with detailed execution metrics
 - **🔧 Extensible**: Easy to extend with custom step definitions and AWS service integrations
@@ -23,9 +23,9 @@ A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serv
 
 - **S3**: File uploads, downloads, and existence checks
 - **SQS**: Message sending, receiving, and queue monitoring
-- **Lambda**: Function invocation, execution tracking, and log analysis
+- **Lambda**: Function invocation, execution tracking, CloudWatch log analysis, and execution counting
 - **Step Functions**: State machine execution, status monitoring, and history analysis
-- **CloudWatch Logs**: Log retrieval, pattern matching, and error detection
+- **CloudWatch Logs**: Log retrieval, pattern matching, error detection, and execution verification
 
 ## 📦 Installation
 
@@ -106,6 +106,7 @@ npm run test:all
 
 - **[GitHub Repository](https://github.com/sophiegle/aws-testing-framework)** - Source code and issues
 - **[Example Project](https://github.com/sophiegle/aws-testing-framework-test)** - Complete usage examples
+- **[Lambda CloudWatch Verification](docs/LAMBDA_CLOUDWATCH_VERIFICATION.md)** - Detailed guide for Lambda execution verification
 
 ## 🔧 Configuration
 
@@ -158,6 +159,23 @@ Feature: End-to-End Data Pipeline
     And I should be able to trace the file "test-data.json" through the entire pipeline
 ```
 
+### Lambda Execution Counting
+
+```gherkin
+Feature: Lambda Execution Verification
+  Scenario: Verify Lambda execution count
+    Given I have an S3 bucket named "test-bucket"
+    And I have a Lambda function named "test-processor"
+    When I upload multiple files to the S3 bucket
+    Then the Lambda function should be invoked 3 times within 5 minutes
+
+  Scenario: Load testing Lambda function
+    Given I have an S3 bucket named "test-bucket"
+    And I have a Lambda function named "test-processor"
+    When I upload many files to the S3 bucket
+    Then the Lambda function should be invoked 10 times within 10 minutes
+```
+
 ### Advanced Monitoring
 
 ```gherkin
@@ -180,6 +198,23 @@ Scenario: Handle processing errors gracefully
 ```
 
 ## 🔍 Advanced Features
+
+### Real Lambda Execution Verification
+
+Unlike other frameworks that only check if Lambda functions exist, this framework verifies actual execution using CloudWatch logs:
+
+```typescript
+// Check if Lambda function has been executed recently
+const hasExecutions = await framework.checkLambdaExecution('my-function');
+
+// Count executions in the last 5 minutes
+const executionCount = await framework.countLambdaExecutionsInLastMinutes('my-function', 5);
+
+// Count executions in a specific time range
+const startTime = new Date(Date.now() - 300000); // 5 minutes ago
+const endTime = new Date();
+const count = await framework.countLambdaExecutions('my-function', startTime, endTime);
+```
 
 ### Interactive Test Execution Dashboard
 
@@ -280,7 +315,7 @@ The framework uses a modular architecture with dedicated service classes:
 ### Service Classes
 - **`S3Service`**: S3 bucket and file operations
 - **`SQSService`**: SQS queue and message operations
-- **`LambdaService`**: Lambda function operations
+- **`LambdaService`**: Lambda function operations with CloudWatch log verification
 - **`StepFunctionService`**: Step Function state machine operations
 - **`PerformanceMonitor`**: Performance metrics and reporting
 - **`StepContextManager`**: Test step context management
@@ -289,7 +324,7 @@ The framework uses a modular architecture with dedicated service classes:
 ### Step Definitions
 - **`s3-steps.ts`**: S3 operations (file uploads, bucket verification)
 - **`sqs-steps.ts`**: SQS operations (message sending, queue verification)
-- **`lambda-steps.ts`**: Lambda operations (function invocation, execution tracking)
+- **`lambda-steps.ts`**: Lambda operations (function invocation, execution tracking, execution counting)
 - **`step-function-steps.ts`**: Step Function operations (execution, state verification)
 - **`monitoring-steps.ts`**: CloudWatch logs and advanced monitoring
 - **`correlation-steps.ts`**: Cross-service correlation and data tracing
@@ -372,7 +407,7 @@ See our [Security Policy](SECURITY.md) for more details.
 
 ## 📊 Project Status
 
-- **Version**: 0.1.8
+- **Version**: 0.1.10
 - **Status**: Active Development
 - **Node.js Support**: 18+
 - **AWS Services**: S3, SQS, Lambda, Step Functions, CloudWatch Logs
@@ -397,5 +432,6 @@ To use this framework for production-ready, end-to-end testing, your AWS environ
 2. **SQS Trigger for Lambda**: The SQS queue must be configured to trigger your Lambda function.
 3. **Lambda Permissions**: The Lambda function must have permission to start executions of your Step Function state machine.
 4. **Step Function**: The Step Function should be configured to process the input as expected from the Lambda.
+5. **CloudWatch Logs**: Lambda functions must have CloudWatch logging enabled for execution verification.
 
 This framework does not simulate AWS events. It only observes and verifies the real event flow in your AWS environment. Ensure all resources and permissions are set up before running the tests.

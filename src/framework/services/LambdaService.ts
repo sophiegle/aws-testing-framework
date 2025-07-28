@@ -3,12 +3,18 @@ import {
   type LambdaClient,
   ListFunctionsCommand,
 } from '@aws-sdk/client-lambda';
+import {
+  CloudWatchLogsClient,
+  FilterLogEventsCommand,
+} from '@aws-sdk/client-cloudwatch-logs';
 
 export class LambdaService {
   private lambdaClient: LambdaClient;
+  private cloudWatchLogsClient: CloudWatchLogsClient;
 
-  constructor(lambdaClient: LambdaClient) {
+  constructor(lambdaClient: LambdaClient, cloudWatchLogsClient: CloudWatchLogsClient) {
     this.lambdaClient = lambdaClient;
+    this.cloudWatchLogsClient = cloudWatchLogsClient;
   }
 
   async findFunction(functionName: string): Promise<void> {
@@ -40,6 +46,32 @@ export class LambdaService {
   }
 
   /**
+   * Get Lambda function logs from CloudWatch
+   */
+  async getLambdaLogs(
+    functionName: string,
+    startTime: Date,
+    endTime: Date
+  ): Promise<string[]> {
+    try {
+      const logGroupName = `/aws/lambda/${functionName}`;
+      
+      const response = await this.cloudWatchLogsClient.send(
+        new FilterLogEventsCommand({
+          logGroupName,
+          startTime: startTime.getTime(),
+          endTime: endTime.getTime(),
+        })
+      );
+
+      return response.events?.map(event => event.message || '') || [];
+    } catch (error) {
+      console.warn(`Failed to get logs for ${functionName}: ${error}`);
+      return [];
+    }
+  }
+
+  /**
    * Check if Lambda function has been executed recently
    */
   async checkLambdaExecution(functionName: string): Promise<boolean> {
@@ -47,17 +79,68 @@ export class LambdaService {
       // Check if the function exists and is accessible
       await this.findFunction(functionName);
 
-      // In a real implementation, you would check CloudWatch logs or Lambda metrics
-      // For now, we'll check if the function is accessible and assume it can be executed
-      // This is a limitation that should be addressed with proper CloudWatch integration
+      // Check CloudWatch logs for execution evidence
+      const startTime = new Date(Date.now() - 300000); // 5 minutes ago
+      const endTime = new Date();
+      
+      const logs = await this.getLambdaLogs(functionName, startTime, endTime);
+      
+      // Look for execution indicators in logs
+      const executionIndicators = [
+        'START RequestId:',
+        'END RequestId:',
+        'REPORT RequestId:',
+        'Duration:',
+        'Billed Duration:'
+      ];
 
-      // TODO: Implement proper Lambda execution checking using CloudWatch logs
-      // const logs = await this.getLambdaLogs(functionName, startTime, endTime);
-      // return logs.length > 0;
+      const hasExecutions = logs.some(log => 
+        executionIndicators.some(indicator => log.includes(indicator))
+      );
 
-      return true;
-    } catch (_error) {
+      return hasExecutions;
+    } catch (error) {
+      console.warn(`Error checking Lambda execution for ${functionName}: ${error}`);
       return false;
     }
+  }
+
+  /**
+   * Count Lambda function executions within a time period
+   */
+  async countLambdaExecutions(
+    functionName: string,
+    startTime: Date,
+    endTime: Date
+  ): Promise<number> {
+    try {
+      // Check if the function exists and is accessible
+      await this.findFunction(functionName);
+      
+      const logs = await this.getLambdaLogs(functionName, startTime, endTime);
+      
+      // Count START RequestId: entries to get execution count
+      const executionCount = logs.filter(log => 
+        log.includes('START RequestId:')
+      ).length;
+      
+      return executionCount;
+    } catch (error) {
+      console.warn(`Error counting Lambda executions for ${functionName}: ${error}`);
+      return 0;
+    }
+  }
+
+  /**
+   * Count Lambda function executions in the last N minutes
+   */
+  async countLambdaExecutionsInLastMinutes(
+    functionName: string,
+    minutes: number
+  ): Promise<number> {
+    const endTime = new Date();
+    const startTime = new Date(endTime.getTime() - (minutes * 60 * 1000));
+    
+    return await this.countLambdaExecutions(functionName, startTime, endTime);
   }
 }
