@@ -127,7 +127,10 @@ export class AWSTestingFramework {
     // Initialize service classes
     this.s3Service = new S3Service(this.s3Client);
     this.sqsService = new SQSService(this.sqsClient);
-    this.lambdaService = new LambdaService(this.lambdaClient, this.cloudWatchLogsClient);
+    this.lambdaService = new LambdaService(
+      this.lambdaClient,
+      this.cloudWatchLogsClient
+    );
     this.stepFunctionService = new StepFunctionService(this.sfnClient);
     this.performanceMonitor = new PerformanceMonitor();
     this.stepContextManager = new StepContextManager();
@@ -229,7 +232,11 @@ export class AWSTestingFramework {
     startTime: Date,
     endTime: Date
   ): Promise<string[]> {
-    return await this.lambdaService.getLambdaLogs(functionName, startTime, endTime);
+    return await this.lambdaService.getLambdaLogs(
+      functionName,
+      startTime,
+      endTime
+    );
   }
 
   /**
@@ -240,7 +247,11 @@ export class AWSTestingFramework {
     startTime: Date,
     endTime: Date
   ): Promise<number> {
-    return await this.lambdaService.countLambdaExecutions(functionName, startTime, endTime);
+    return await this.lambdaService.countLambdaExecutions(
+      functionName,
+      startTime,
+      endTime
+    );
   }
 
   /**
@@ -250,7 +261,10 @@ export class AWSTestingFramework {
     functionName: string,
     minutes: number
   ): Promise<number> {
-    return await this.lambdaService.countLambdaExecutionsInLastMinutes(functionName, minutes);
+    return await this.lambdaService.countLambdaExecutionsInLastMinutes(
+      functionName,
+      minutes
+    );
   }
   //#endregion
 

@@ -116,7 +116,11 @@ When(
     for (let i = 1; i <= 10; i++) {
       files.push({
         name: `load-test-${i}.json`,
-        content: JSON.stringify({ id: i, data: `load-test-${i}`, timestamp: Date.now() })
+        content: JSON.stringify({
+          id: i,
+          data: `load-test-${i}`,
+          timestamp: Date.now(),
+        }),
       });
     }
 

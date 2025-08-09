@@ -13,12 +13,11 @@ export class S3Service {
   }
 
   async findBucket(bucketName: string): Promise<void> {
-    const command = new ListBucketsCommand({});
-    const response = await this.s3Client.send(command);
-    const bucket = response.Buckets?.find(
-      (bucket) => bucket.Name === bucketName
-    );
-    if (!bucket) {
+    const command = new ListBucketsCommand({
+      Prefix: bucketName,
+    });
+    const bucketFound = await this.s3Client.send(command);
+    if (!bucketFound) {
       throw new Error(`Bucket ${bucketName} not found`);
     }
   }

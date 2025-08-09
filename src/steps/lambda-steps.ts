@@ -97,7 +97,7 @@ When(
       { name: 'concurrent2.txt', content: 'test data 2' },
       { name: 'concurrent3.txt', content: 'test data 3' },
       { name: 'concurrent4.txt', content: 'test data 4' },
-      { name: 'concurrent5.txt', content: 'test data 5' }
+      { name: 'concurrent5.txt', content: 'test data 5' },
     ];
 
     for (const file of files) {
@@ -107,7 +107,38 @@ When(
         file.content
       );
       // Small delay between uploads
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
+  }
+);
+
+Then(
+  'the Lambda function logs should not contain errors',
+  async function (this: StepContext) {
+    if (!this.functionName) {
+      throw new Error(
+        'Function name is not set. Make sure to create a Lambda function first.'
+      );
+    }
+
+    const startTime = new Date(Date.now() - 60000);
+    const endTime = new Date();
+
+    const logs = await framework.getLambdaLogs(
+      this.functionName,
+      startTime,
+      endTime
+    );
+
+    const errorIndicators = ['ERROR', 'Exception', 'Error:', 'FAILED'];
+    const hasErrors = logs.some((log) =>
+      errorIndicators.some((indicator) => log.includes(indicator))
+    );
+
+    if (hasErrors) {
+      throw new Error('Lambda logs contain error indicators');
+    }
+
+    console.log('Lambda logs checked and no errors found');
   }
 );

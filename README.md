@@ -7,6 +7,8 @@
 
 A comprehensive BDD (Behavior-Driven Development) framework for testing AWS serverless architectures and workflows. Built with TypeScript and Cucumber, this framework enables end-to-end testing of complex AWS service interactions including S3, SQS, Lambda, and Step Functions with real CloudWatch log verification.
 
+**Note: This project is in its early stages and as such is not as stable or functionally comprehensive as I'd like! Feel free to raise issues and contribute in order to improve the package**
+
 ## 🚀 Features
 
 - **🔗 End-to-End Testing**: Test complete serverless workflows from S3 uploads to Step Function executions
