@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schemas.awstestingframework.dev/config.json",
+  "dashboard": {
+    "enabled": true,
+    "outputDir": "./test-reports",
+    "themes": ["light", "dark"],
+    "autoGenerate": true,
+    "autoOpen": false
+  },
+  "reporting": {
+    "baseDir": "./test-reports", 
+    "cucumberJsonPath": "./reports/cucumber-report.json",
+    "includePerformanceMetrics": true,
+    "includeStepDetails": true,
+    "maxFeaturesToShow": 50
+  },
+  "testing": {
+    "defaultTimeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000,
+    "verbose": false
+  },
+  "aws": {
+    "region": "us-east-1",
+    "maxRetries": 3,
+    "timeout": 10000
+  }
+}

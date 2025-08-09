@@ -279,6 +279,122 @@ const health = await framework.getHealthStatus();
 console.log('Framework healthy:', health.isHealthy);
 ```
 
+## 📊 Configuration-Driven Dashboard Generation
+
+The framework supports **automatic configuration detection** for zero-setup dashboard generation:
+
+### Quick Setup
+
+1. **Create a config file** in your project root:
+
+```json
+// aws-testing-framework.config.json
+{
+  "dashboard": {
+    "enabled": true,
+    "autoGenerate": true,
+    "themes": ["light", "dark"]
+  }
+}
+```
+
+2. **Generate dashboard automatically**:
+
+```bash
+# Auto-detects config and generates dashboard
+npx aws-testing-framework generate-dashboard
+
+# Or use the short alias
+npx awstf generate-dashboard
+```
+
+3. **Integrate with your test pipeline**:
+
+```json
+// package.json
+{
+  "scripts": {
+    "test": "cucumber-js",
+    "test:dashboard": "npm test && npx awstf generate-dashboard"
+  }
+}
+```
+
+### Programmatic Usage
+
+```typescript
+import { generateSmartDashboard, ConfigManager } from 'aws-testing-framework';
+
+// Auto-detects configuration and generates dashboard
+const result = generateSmartDashboard();
+
+if (result.success) {
+  console.log('Dashboard generated:', result.paths);
+} else {
+  console.error('Error:', result.message);
+}
+
+// Access configuration details
+const configManager = ConfigManager.getInstance();
+const config = configManager.autoDetectConfig();
+```
+
+### Environment-Specific Configurations
+
+```javascript
+// development-config.js
+module.exports = {
+  dashboard: {
+    enabled: true,
+    autoOpen: true, // Auto-open in browser
+    themes: ['light'] // Faster generation
+  },
+  testing: {
+    verbose: true,
+    defaultTimeout: 60000
+  }
+};
+
+// ci-config.js  
+module.exports = {
+  dashboard: {
+    enabled: true,
+    themes: ['light', 'dark']
+  },
+  ci: {
+    uploadToS3: {
+      bucket: process.env.S3_REPORTS_BUCKET,
+      prefix: `reports/${process.env.BRANCH_NAME}`
+    },
+    notifications: {
+      slack: {
+        webhookUrl: process.env.SLACK_WEBHOOK_URL,
+        channel: '#test-results',
+        onFailure: true
+      }
+    }
+  }
+};
+```
+
+### Supported Configuration Files
+
+The framework automatically searches for configuration files:
+
+- `aws-testing-framework.config.js`
+- `aws-testing-framework.config.json` 
+- `awstf.config.js` / `awstf.config.json`
+- `.awstf.json`
+- `package.json` (`awsTestingFramework` section)
+
+### Auto-detected Environment Variables
+
+- `AWS_REGION`, `NODE_ENV`, `BUILD_ID`, `BRANCH_NAME`
+- `SLACK_WEBHOOK_URL`, `S3_REPORTS_BUCKET`
+- `GITHUB_RUN_ID`, `GITHUB_REF_NAME`, `GITHUB_SHA`
+
+See [`examples/config/`](examples/config/) for complete configuration examples and [`examples/config/README.md`](examples/config/README.md) for detailed documentation.
+
 ## 🏗️ Architecture
 
 The framework uses a modular architecture with dedicated service classes:

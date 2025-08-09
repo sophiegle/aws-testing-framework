@@ -4,6 +4,10 @@
   "description": "A comprehensive BDD framework for testing AWS serverless architectures with TypeScript and Cucumber. Supports S3, SQS, Lambda, Step Functions, and CloudWatch integration testing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "aws-testing-framework": "dist/cli/generate-dashboard.js",
+    "awstf": "dist/cli/generate-dashboard.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
