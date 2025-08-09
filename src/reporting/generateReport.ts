@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { DashboardConfig } from './TestDashboard';
 
 interface CucumberStep {
   keyword: string;
@@ -37,7 +38,7 @@ export interface TestReporterResults {
   }>;
 }
 
-function convertCucumberReportToResults(
+export function convertCucumberReportToResults(
   report: CucumberFeature[]
 ): TestReporterResults[] {
   return report.map((feature) => ({
@@ -202,6 +203,110 @@ export function main() {
   } catch (_error) {
     process.exit(1);
   }
+}
+
+/**
+ * Generate interactive dashboard from Cucumber JSON report
+ * @param cucumberJsonPath Path to the Cucumber JSON report file
+ * @param outputDir Directory to write dashboard files (default: 'test-reports')
+ * @param config Optional dashboard configuration
+ * @returns Object with paths to generated dashboard files
+ */
+export function generateDashboardFromCucumberJson(
+  cucumberJsonPath: string,
+  outputDir = 'test-reports',
+  config?: { light?: Partial<DashboardConfig>; dark?: Partial<DashboardConfig> }
+): { lightTheme: string; darkTheme: string } {
+  // Import here to avoid circular dependencies
+  const { TestDashboard } = require('./TestDashboard');
+  const path = require('node:path');
+
+  // Check if JSON report exists
+  if (!existsSync(cucumberJsonPath)) {
+    throw new Error(`Cucumber JSON report not found at: ${cucumberJsonPath}`);
+  }
+
+  // Ensure output directory exists
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Read and parse Cucumber JSON
+  const jsonData = readFileSync(cucumberJsonPath, 'utf-8');
+  const cucumberReport = JSON.parse(jsonData) as CucumberFeature[];
+
+  // Convert to TestReporterResults format
+  const results = convertCucumberReportToResults(cucumberReport);
+
+  // Generate dashboards
+  const lightDashboard = new TestDashboard({
+    theme: 'light',
+    ...config?.light,
+  });
+  const darkDashboard = new TestDashboard({ theme: 'dark', ...config?.dark });
+  const metrics = lightDashboard.calculateMetrics(results);
+
+  // Generate dashboard HTML
+  const lightHtml = lightDashboard.generateDashboard(results, metrics);
+  const darkHtml = darkDashboard.generateDashboard(results, metrics);
+
+  // Write dashboard files
+  const lightPath = path.join(outputDir, 'dashboard.html');
+  const darkPath = path.join(outputDir, 'dashboard-dark.html');
+
+  writeFileSync(lightPath, lightHtml);
+  writeFileSync(darkPath, darkHtml);
+
+  return {
+    lightTheme: lightPath,
+    darkTheme: darkPath,
+  };
+}
+
+/**
+ * Generate dashboard from test results (already converted format)
+ * @param results Test results in TestReporterResults format
+ * @param outputDir Directory to write dashboard files (default: 'test-reports')
+ * @param config Optional dashboard configuration
+ * @returns Object with paths to generated dashboard files
+ */
+export function generateDashboard(
+  results: TestReporterResults[],
+  outputDir = 'test-reports',
+  config?: { light?: Partial<DashboardConfig>; dark?: Partial<DashboardConfig> }
+): { lightTheme: string; darkTheme: string } {
+  // Import here to avoid circular dependencies
+  const { TestDashboard } = require('./TestDashboard');
+  const path = require('node:path');
+
+  // Ensure output directory exists
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Generate dashboards
+  const lightDashboard = new TestDashboard({
+    theme: 'light',
+    ...config?.light,
+  });
+  const darkDashboard = new TestDashboard({ theme: 'dark', ...config?.dark });
+  const metrics = lightDashboard.calculateMetrics(results);
+
+  // Generate dashboard HTML
+  const lightHtml = lightDashboard.generateDashboard(results, metrics);
+  const darkHtml = darkDashboard.generateDashboard(results, metrics);
+
+  // Write dashboard files
+  const lightPath = path.join(outputDir, 'dashboard.html');
+  const darkPath = path.join(outputDir, 'dashboard-dark.html');
+
+  writeFileSync(lightPath, lightHtml);
+  writeFileSync(darkPath, darkHtml);
+
+  return {
+    lightTheme: lightPath,
+    darkTheme: darkPath,
+  };
 }
 
 if (require.main === module) {

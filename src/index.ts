@@ -35,7 +35,19 @@ export type {
 
 export { default as CustomFormatter } from './reporting/CustomFormatter';
 export type { TestReporterResults as GenerateReportResults } from './reporting/generateReport';
-export { generateHtmlReport } from './reporting/generateReport';
+export {
+  generateHtmlReport,
+  generateDashboard,
+  generateDashboardFromCucumberJson,
+  convertCucumberReportToResults,
+} from './reporting/generateReport';
+
+// Export dashboard functionality
+export { TestDashboard } from './reporting/TestDashboard';
+export type {
+  DashboardConfig,
+  DashboardMetrics,
+} from './reporting/TestDashboard';
 
 // Export reporting interfaces for documentation
 export type {
