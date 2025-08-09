@@ -4,10 +4,10 @@
  * Main CLI entry point for AWS Testing Framework
  */
 
-import { generateDashboardCLI } from './generate-dashboard';
-import { initCLI } from './init';
 import { configureCLI } from './configure';
 import { doctorCLI } from './doctor';
+import { generateDashboardCLI } from './generate-dashboard';
+import { initCLI } from './init';
 
 interface CLIOptions {
   command?: string;
@@ -18,7 +18,7 @@ interface CLIOptions {
 
 function parseArgs(): CLIOptions {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     return { help: true };
   }
@@ -27,8 +27,11 @@ function parseArgs(): CLIOptions {
   if ((args.includes('--help') || args.includes('-h')) && args.length === 1) {
     return { help: true };
   }
-  
-  if ((args.includes('--version') || args.includes('-v')) && args.length === 1) {
+
+  if (
+    (args.includes('--version') || args.includes('-v')) &&
+    args.length === 1
+  ) {
     return { version: true };
   }
 
@@ -39,7 +42,7 @@ function parseArgs(): CLIOptions {
     command,
     args: commandArgs,
     help: commandArgs.includes('--help') || commandArgs.includes('-h'),
-    version: commandArgs.includes('--version') || commandArgs.includes('-v')
+    version: commandArgs.includes('--version') || commandArgs.includes('-v'),
   };
 }
 
@@ -127,15 +130,15 @@ async function main(): Promise<void> {
 
       default:
         if (options.command) {
-          console.error(`❌ Unknown command: ${options.command}`);
-          console.log('\nRun "aws-testing-framework --help" for available commands.');
+          console.log(
+            '\nRun "aws-testing-framework --help" for available commands.'
+          );
         } else {
           showMainHelp();
         }
         process.exit(1);
     }
-  } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : 'Unknown error');
+  } catch (_error) {
     process.exit(1);
   }
 }

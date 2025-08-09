@@ -151,16 +151,21 @@ Edit \`aws-testing-framework.config.json\` to customize:
 
 For more configuration options, see:
 https://github.com/sophiegle/aws-testing-framework/tree/main/examples/config
-`
+`,
     },
     dependencies: ['aws-testing-framework'],
-    devDependencies: ['@cucumber/cucumber', 'typescript', 'ts-node', '@types/node'],
+    devDependencies: [
+      '@cucumber/cucumber',
+      'typescript',
+      'ts-node',
+      '@types/node',
+    ],
     scripts: {
-      'test': 'cucumber-js',
+      test: 'cucumber-js',
       'test:dashboard': 'npm test && npx awstf generate-dashboard',
-      'dashboard': 'npx awstf generate-dashboard',
-      'build': 'tsc --noEmit'
-    }
+      dashboard: 'npx awstf generate-dashboard',
+      build: 'tsc --noEmit',
+    },
   },
 
   comprehensive: {
@@ -169,13 +174,13 @@ https://github.com/sophiegle/aws-testing-framework/tree/main/examples/config
     directories: [
       'features',
       'features/s3',
-      'features/lambda', 
+      'features/lambda',
       'features/step-functions',
       'features/sqs',
       'step-definitions',
       'test-data',
       'test-reports',
-      'lib'
+      'lib',
     ],
     files: {
       'features/s3/file-processing.feature': `Feature: S3 File Processing
@@ -283,26 +288,38 @@ export class TestHelpers {
     includePerformanceMetrics: true,
     includeStepDetails: true
   }
-};`
+};`,
     },
     dependencies: ['aws-testing-framework'],
-    devDependencies: ['@cucumber/cucumber', 'typescript', 'ts-node', '@types/node', '@types/cucumber'],
+    devDependencies: [
+      '@cucumber/cucumber',
+      'typescript',
+      'ts-node',
+      '@types/node',
+      '@types/cucumber',
+    ],
     scripts: {
-      'test': 'cucumber-js',
+      test: 'cucumber-js',
       'test:dashboard': 'npm test && npx awstf generate-dashboard',
       'test:dev': 'NODE_ENV=development npm test',
       'test:watch': 'npm test -- --watch',
-      'dashboard': 'npx awstf generate-dashboard',
+      dashboard: 'npx awstf generate-dashboard',
       'dashboard:dev': 'npx awstf generate-dashboard --theme light --verbose',
-      'build': 'tsc',
-      'clean': 'rm -rf test-reports coverage'
-    }
+      build: 'tsc',
+      clean: 'rm -rf test-reports coverage',
+    },
   },
 
   ci: {
     name: 'CI/CD Optimized Project',
     description: 'Optimized setup for continuous integration pipelines',
-    directories: ['features', 'step-definitions', 'test-data', 'test-reports', '.github/workflows'],
+    directories: [
+      'features',
+      'step-definitions',
+      'test-data',
+      'test-reports',
+      '.github/workflows',
+    ],
     files: {
       'features/smoke-tests.feature': `Feature: Smoke Tests for CI
   Background:
@@ -387,22 +404,28 @@ jobs:
       prefix: 'ci-reports'
     } : undefined
   }
-};`
+};`,
     },
     dependencies: ['aws-testing-framework'],
-    devDependencies: ['@cucumber/cucumber', 'typescript', 'ts-node', '@types/node'],
+    devDependencies: [
+      '@cucumber/cucumber',
+      'typescript',
+      'ts-node',
+      '@types/node',
+    ],
     scripts: {
-      'test': 'cucumber-js',
+      test: 'cucumber-js',
       'test:ci': 'NODE_ENV=ci npm test && npx awstf generate-dashboard',
       'test:smoke': 'cucumber-js features/smoke-tests.feature',
-      'dashboard': 'npx awstf generate-dashboard',
-      'doctor': 'npx awstf doctor'
-    }
+      dashboard: 'npx awstf generate-dashboard',
+      doctor: 'npx awstf doctor',
+    },
   },
 
   enterprise: {
     name: 'Enterprise AWS Testing Project',
-    description: 'Advanced setup with monitoring, notifications, and enterprise features',
+    description:
+      'Advanced setup with monitoring, notifications, and enterprise features',
     directories: [
       'features',
       'features/integration',
@@ -411,7 +434,7 @@ jobs:
       'test-data',
       'test-reports',
       'lib',
-      'config'
+      'config',
     ],
     files: {
       'features/integration/end-to-end.feature': `Feature: End-to-End Integration Tests
@@ -480,30 +503,36 @@ module.exports = {
     }
   },
   ...monitoring
-};`
+};`,
     },
     dependencies: ['aws-testing-framework'],
-    devDependencies: ['@cucumber/cucumber', 'typescript', 'ts-node', '@types/node', '@types/cucumber'],
+    devDependencies: [
+      '@cucumber/cucumber',
+      'typescript',
+      'ts-node',
+      '@types/node',
+      '@types/cucumber',
+    ],
     scripts: {
-      'test': 'cucumber-js',
+      test: 'cucumber-js',
       'test:integration': 'cucumber-js features/integration/',
       'test:performance': 'cucumber-js features/performance/',
       'test:enterprise': 'npm run test:integration && npm run test:performance',
-      'dashboard': 'npx awstf generate-dashboard',
+      dashboard: 'npx awstf generate-dashboard',
       'dashboard:enterprise': 'npx awstf generate-dashboard --verbose',
-      'doctor': 'npx awstf doctor --verbose',
-      'monitor': 'node lib/monitoring.js'
-    }
-  }
+      doctor: 'npx awstf doctor --verbose',
+      monitor: 'node lib/monitoring.js',
+    },
+  },
 };
 
 function parseArgs(): InitOptions {
   const args = process.argv.slice(2);
   const options: InitOptions = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case '--name':
       case '-n':
@@ -532,7 +561,7 @@ function parseArgs(): InitOptions {
         break;
     }
   }
-  
+
   return options;
 }
 
@@ -589,7 +618,7 @@ async function createProject(options: InitOptions): Promise<void> {
             return `Directory "${input}" already exists`;
           }
           return true;
-        }
+        },
       },
       {
         type: 'list',
@@ -598,28 +627,28 @@ async function createProject(options: InitOptions): Promise<void> {
         choices: [
           {
             name: '🚀 Basic - Simple setup for basic AWS testing',
-            value: 'basic'
+            value: 'basic',
           },
           {
             name: '🎯 Comprehensive - Full-featured setup with all services',
-            value: 'comprehensive'
+            value: 'comprehensive',
           },
           {
             name: '🔄 CI - CI/CD optimized setup',
-            value: 'ci'
+            value: 'ci',
           },
           {
             name: '🏢 Enterprise - Advanced setup with monitoring',
-            value: 'enterprise'
-          }
+            value: 'enterprise',
+          },
         ],
-        default: templateType || 'basic'
+        default: templateType || 'basic',
       },
       {
         type: 'input',
         name: 'awsRegion',
         message: 'AWS Region:',
-        default: options.aws?.region || process.env.AWS_REGION || 'us-east-1'
+        default: options.aws?.region || process.env.AWS_REGION || 'us-east-1',
       },
       {
         type: 'checkbox',
@@ -629,23 +658,27 @@ async function createProject(options: InitOptions): Promise<void> {
           { name: 'S3 (File storage)', value: 's3', checked: true },
           { name: 'Lambda (Functions)', value: 'lambda', checked: true },
           { name: 'SQS (Queues)', value: 'sqs', checked: true },
-          { name: 'Step Functions (Workflows)', value: 'stepfunctions', checked: false },
-          { name: 'SNS (Notifications)', value: 'sns', checked: false }
-        ]
+          {
+            name: 'Step Functions (Workflows)',
+            value: 'stepfunctions',
+            checked: false,
+          },
+          { name: 'SNS (Notifications)', value: 'sns', checked: false },
+        ],
       },
       {
         type: 'confirm',
         name: 'typescript',
         message: 'Use TypeScript?',
-        default: options.typescript !== false
-      }
+        default: options.typescript !== false,
+      },
     ]);
 
     projectName = answers.projectName;
     templateType = answers.template;
     options.aws = {
       region: answers.awsRegion,
-      services: answers.awsServices
+      services: answers.awsServices,
     };
     options.typescript = answers.typescript;
 
@@ -653,17 +686,18 @@ async function createProject(options: InitOptions): Promise<void> {
   }
 
   const template = templates[templateType || 'basic'];
-  const projectDir = join(process.cwd(), projectName!);
+  const projectDir = join(process.cwd(), projectName || 'aws-testing-project');
 
   console.log(`🚀 Creating AWS Testing Framework project: ${projectName}`);
   console.log(`📋 Template: ${template.name}`);
   console.log(`📁 Directory: ${projectDir}`);
   console.log(`☁️  AWS Region: ${options.aws?.region || 'us-east-1'}`);
-  console.log(`🛠️  Services: ${options.aws?.services?.join(', ') || 'S3, Lambda, SQS'}\n`);
+  console.log(
+    `🛠️  Services: ${options.aws?.services?.join(', ') || 'S3, Lambda, SQS'}\n`
+  );
 
   // Check if directory exists
   if (existsSync(projectDir)) {
-    console.error(`❌ Directory ${projectName} already exists!`);
     process.exit(1);
   }
 
@@ -671,7 +705,7 @@ async function createProject(options: InitOptions): Promise<void> {
   mkdirSync(projectDir, { recursive: true });
 
   // Create subdirectories
-  template.directories.forEach(dir => {
+  template.directories.forEach((dir) => {
     mkdirSync(join(projectDir, dir), { recursive: true });
     console.log(`📁 Created directory: ${dir}/`);
   });
@@ -689,21 +723,30 @@ async function createProject(options: InitOptions): Promise<void> {
     version: '1.0.0',
     description: `AWS Testing project using ${template.name}`,
     scripts: template.scripts,
-    dependencies: template.dependencies.reduce((acc, dep) => {
-      acc[dep] = '^0.3.0';
-      return acc;
-    }, {} as Record<string, string>),
-    devDependencies: template.devDependencies.reduce((acc, dep) => {
-      if (dep === '@cucumber/cucumber') acc[dep] = '^10.0.0';
-      else if (dep === 'typescript') acc[dep] = '^5.0.0';
-      else if (dep === 'ts-node') acc[dep] = '^10.0.0';
-      else if (dep.startsWith('@types/')) acc[dep] = 'latest';
-      else acc[dep] = 'latest';
-      return acc;
-    }, {} as Record<string, string>)
+    dependencies: template.dependencies.reduce(
+      (acc, dep) => {
+        acc[dep] = '^0.3.0';
+        return acc;
+      },
+      {} as Record<string, string>
+    ),
+    devDependencies: template.devDependencies.reduce(
+      (acc, dep) => {
+        if (dep === '@cucumber/cucumber') acc[dep] = '^10.0.0';
+        else if (dep === 'typescript') acc[dep] = '^5.0.0';
+        else if (dep === 'ts-node') acc[dep] = '^10.0.0';
+        else if (dep.startsWith('@types/')) acc[dep] = 'latest';
+        else acc[dep] = 'latest';
+        return acc;
+      },
+      {} as Record<string, string>
+    ),
   };
 
-  writeFileSync(join(projectDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(packageJson, null, 2)
+  );
   console.log('📄 Created file: package.json');
 
   console.log(`\n✅ Project ${projectName} created successfully!`);
@@ -711,14 +754,16 @@ async function createProject(options: InitOptions): Promise<void> {
   console.log(`   1. cd ${projectName}`);
   console.log('   2. npm install');
   console.log('   3. Configure AWS credentials: aws configure');
-  console.log('   4. Update aws-testing-framework.config.json with your settings');
+  console.log(
+    '   4. Update aws-testing-framework.config.json with your settings'
+  );
   console.log('   5. npm test');
   console.log('\n🎉 Happy testing!');
 }
 
 async function main(): Promise<void> {
   const options = parseArgs();
-  
+
   if (options.help) {
     showHelp();
     process.exit(0);
@@ -726,8 +771,7 @@ async function main(): Promise<void> {
 
   try {
     await createProject(options);
-  } catch (error) {
-    console.error('❌ Error creating project:', error instanceof Error ? error.message : 'Unknown error');
+  } catch (_error) {
     process.exit(1);
   }
 }

@@ -419,16 +419,17 @@ export class StepFunctionService {
             typeof event.stateEnteredEventDetails?.name === 'string'
               ? event.stateEnteredEventDetails?.name
               : undefined,
-          stateEnteredEventDetails: event.stateEnteredEventDetails as
+          stateEnteredEventDetails: event.stateEnteredEventDetails as unknown as
             | Record<string, unknown>
             | undefined,
-          stateExitedEventDetails: event.stateExitedEventDetails as
+          stateExitedEventDetails: event.stateExitedEventDetails as unknown as
             | Record<string, unknown>
             | undefined,
-          taskSucceededEventDetails: event.taskSucceededEventDetails as
-            | Record<string, unknown>
-            | undefined,
-          taskFailedEventDetails: event.taskFailedEventDetails as
+          taskSucceededEventDetails:
+            event.taskSucceededEventDetails as unknown as
+              | Record<string, unknown>
+              | undefined,
+          taskFailedEventDetails: event.taskFailedEventDetails as unknown as
             | Record<string, unknown>
             | undefined,
         })) || [];

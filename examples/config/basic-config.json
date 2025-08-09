@@ -8,7 +8,7 @@
     "autoOpen": false
   },
   "reporting": {
-    "baseDir": "./test-reports", 
+    "baseDir": "./test-reports",
     "cucumberJsonPath": "./reports/cucumber-report.json",
     "includePerformanceMetrics": true,
     "includeStepDetails": true,

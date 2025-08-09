@@ -4,7 +4,7 @@
  * CLI tool for generating dashboards with auto-detected configuration
  */
 
-import { generateSmartDashboard, ConfigManager } from '../index';
+import { ConfigManager, generateSmartDashboard } from '../index';
 
 interface CLIOptions {
   config?: string;
@@ -18,10 +18,10 @@ interface CLIOptions {
 function parseArgs(): CLIOptions {
   const args = process.argv.slice(2);
   const options: CLIOptions = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case '--config':
       case '-c':
@@ -49,7 +49,7 @@ function parseArgs(): CLIOptions {
         break;
     }
   }
-  
+
   return options;
 }
 
@@ -97,21 +97,21 @@ Configuration:
 
 async function main(): Promise<void> {
   const options = parseArgs();
-  
+
   if (options.help) {
     showHelp();
     process.exit(0);
   }
-  
+
   try {
     if (options.verbose) {
       console.log('🚀 AWS Testing Framework Dashboard Generator');
       console.log('==========================================\n');
     }
-    
+
     // Initialize configuration manager
     const configManager = ConfigManager.getInstance();
-    
+
     // Load configuration
     if (options.config) {
       if (options.verbose) {
@@ -123,7 +123,7 @@ async function main(): Promise<void> {
         console.log('🔍 Auto-detecting configuration...');
       }
       configManager.autoDetectConfig();
-      
+
       const configPath = configManager.getConfigPath();
       if (configPath && options.verbose) {
         console.log(`✅ Found configuration: ${configPath}`);
@@ -131,29 +131,30 @@ async function main(): Promise<void> {
         console.log('⚙️  Using default configuration');
       }
     }
-    
+
     // Check if dashboard generation is enabled
     if (!configManager.isDashboardEnabled()) {
-      console.warn('⚠️  Dashboard generation is disabled in configuration');
-      console.log('💡 Enable it by setting dashboard.enabled = true in your config');
+      console.log(
+        '💡 Enable it by setting dashboard.enabled = true in your config'
+      );
       process.exit(1);
     }
-    
+
     // Apply CLI overrides
-    const configOverrides: any = {};
+    const configOverrides: Record<string, unknown> = {};
     if (options.theme) {
       if (options.theme !== 'both') {
         configOverrides.theme = options.theme;
       }
     }
-    
+
     if (options.verbose) {
       console.log('📊 Generating dashboard...');
     }
-    
+
     // Generate dashboard
     const result = generateSmartDashboard(options.input, configOverrides);
-    
+
     if (result.success) {
       console.log('✅', result.message);
       if (result.paths && options.verbose) {
@@ -161,14 +162,10 @@ async function main(): Promise<void> {
         console.log(`🌙 Dark theme: ${result.paths.darkTheme}`);
       }
     } else {
-      console.error('❌', result.message);
       process.exit(1);
     }
-    
   } catch (error) {
-    console.error('❌ Error:', error instanceof Error ? error.message : 'Unknown error');
     if (options.verbose && error instanceof Error) {
-      console.error('Stack trace:', error.stack);
     }
     process.exit(1);
   }

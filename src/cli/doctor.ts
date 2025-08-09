@@ -27,7 +27,7 @@ class EnvironmentDoctor {
   private results: CheckResult[] = [];
   private framework?: AWSTestingFramework;
 
-  async runAllChecks(options: DoctorOptions): Promise<CheckResult[]> {
+  async runAllChecks(_options: DoctorOptions): Promise<CheckResult[]> {
     console.log('🩺 AWS Testing Framework Environment Check');
     console.log('==========================================\n');
 
@@ -44,13 +44,13 @@ class EnvironmentDoctor {
 
   private async checkNodeVersion(): Promise<void> {
     const nodeVersion = process.version;
-    const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0]);
+    const majorVersion = Number.parseInt(nodeVersion.slice(1).split('.')[0]);
 
     if (majorVersion >= 18) {
       this.addResult({
         name: 'Node.js Version',
         status: 'pass',
-        message: `Node.js ${nodeVersion} (>= 18 required)`
+        message: `Node.js ${nodeVersion} (>= 18 required)`,
       });
     } else {
       this.addResult({
@@ -58,7 +58,7 @@ class EnvironmentDoctor {
         status: 'fail',
         message: `Node.js ${nodeVersion} is too old`,
         suggestion: 'Upgrade to Node.js 18 or later',
-        fixable: false
+        fixable: false,
       });
     }
   }
@@ -73,15 +73,18 @@ class EnvironmentDoctor {
       this.addResult({
         name: 'AWS Credentials',
         status: 'pass',
-        message: hasProfile ? `Using AWS profile: ${process.env.AWS_PROFILE}` : 'Environment variables set'
+        message: hasProfile
+          ? `Using AWS profile: ${process.env.AWS_PROFILE}`
+          : 'Environment variables set',
       });
     } else {
       this.addResult({
         name: 'AWS Credentials',
         status: 'fail',
         message: 'No AWS credentials found',
-        suggestion: 'Run "aws configure" or set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY',
-        fixable: false
+        suggestion:
+          'Run "aws configure" or set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY',
+        fixable: false,
       });
     }
 
@@ -89,14 +92,14 @@ class EnvironmentDoctor {
       this.addResult({
         name: 'AWS Region',
         status: 'pass',
-        message: `Region set: ${process.env.AWS_REGION}`
+        message: `Region set: ${process.env.AWS_REGION}`,
       });
     } else {
       this.addResult({
         name: 'AWS Region',
         status: 'warn',
         message: 'AWS_REGION not set, using default: us-east-1',
-        suggestion: 'Set AWS_REGION environment variable'
+        suggestion: 'Set AWS_REGION environment variable',
       });
     }
   }
@@ -110,14 +113,14 @@ class EnvironmentDoctor {
         this.addResult({
           name: 'AWS Service Access',
           status: 'pass',
-          message: 'All AWS services accessible'
+          message: 'All AWS services accessible',
         });
       } else {
         this.addResult({
           name: 'AWS Service Access',
           status: 'warn',
           message: `AWS services may have issues (error rate: ${healthStatus.performance.errorRate}%)`,
-          suggestion: 'Check AWS permissions and service availability'
+          suggestion: 'Check AWS permissions and service availability',
         });
       }
 
@@ -128,51 +131,52 @@ class EnvironmentDoctor {
           name: 'AWS Setup Validation',
           status: 'fail',
           message: `Setup errors: ${awsSetup.errors.slice(0, 2).join(', ')}${awsSetup.errors.length > 2 ? '...' : ''}`,
-          suggestion: 'Fix AWS configuration and permissions'
+          suggestion: 'Fix AWS configuration and permissions',
         });
       } else if (awsSetup.warnings.length > 0) {
         this.addResult({
           name: 'AWS Setup Validation',
           status: 'warn',
           message: `Setup warnings: ${awsSetup.warnings.slice(0, 2).join(', ')}${awsSetup.warnings.length > 2 ? '...' : ''}`,
-          suggestion: 'Review AWS configuration warnings'
+          suggestion: 'Review AWS configuration warnings',
         });
       } else {
         this.addResult({
           name: 'AWS Setup Validation',
           status: 'pass',
-          message: 'AWS setup is valid'
+          message: 'AWS setup is valid',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       this.addResult({
         name: 'AWS Service Access',
         status: 'fail',
         message: 'Cannot connect to AWS services',
-        suggestion: 'Check AWS credentials and network connectivity'
+        suggestion: 'Check AWS credentials and network connectivity',
       });
     }
   }
 
   private async checkConfiguration(): Promise<void> {
     const configManager = ConfigManager.getInstance();
-    
+
     try {
-      const config = configManager.autoDetectConfig();
+      const _config = configManager.autoDetectConfig();
       const configPath = configManager.getConfigPath();
 
       if (configPath) {
         this.addResult({
           name: 'Configuration',
           status: 'pass',
-          message: `Found config: ${configPath}`
+          message: `Found config: ${configPath}`,
         });
       } else {
         this.addResult({
           name: 'Configuration',
           status: 'warn',
           message: 'Using default configuration',
-          suggestion: 'Create aws-testing-framework.config.json for customization'
+          suggestion:
+            'Create aws-testing-framework.config.json for customization',
         });
       }
 
@@ -181,36 +185,33 @@ class EnvironmentDoctor {
         this.addResult({
           name: 'Dashboard Configuration',
           status: 'pass',
-          message: 'Dashboard generation enabled'
+          message: 'Dashboard generation enabled',
         });
       } else {
         this.addResult({
           name: 'Dashboard Configuration',
           status: 'warn',
           message: 'Dashboard generation disabled',
-          suggestion: 'Enable dashboard in configuration for better reporting'
+          suggestion: 'Enable dashboard in configuration for better reporting',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       this.addResult({
         name: 'Configuration',
         status: 'fail',
         message: 'Configuration error',
-        suggestion: 'Check configuration file syntax'
+        suggestion: 'Check configuration file syntax',
       });
     }
   }
 
   private async checkProjectStructure(): Promise<void> {
-    const requiredFiles = [
-      'package.json',
-      'cucumber.js'
-    ];
+    const requiredFiles = ['package.json', 'cucumber.js'];
 
     const optionalDirectories = [
       'features',
       'step-definitions',
-      'test-reports'
+      'test-reports',
     ];
 
     for (const file of requiredFiles) {
@@ -218,31 +219,35 @@ class EnvironmentDoctor {
         this.addResult({
           name: `Project File: ${file}`,
           status: 'pass',
-          message: `${file} exists`
+          message: `${file} exists`,
         });
       } else {
         this.addResult({
           name: `Project File: ${file}`,
           status: 'fail',
           message: `${file} missing`,
-          suggestion: file === 'cucumber.js' ? 'Create Cucumber configuration file' : 'Initialize npm project'
+          suggestion:
+            file === 'cucumber.js'
+              ? 'Create Cucumber configuration file'
+              : 'Initialize npm project',
         });
       }
     }
 
-    const existingDirs = optionalDirectories.filter(dir => existsSync(dir));
+    const existingDirs = optionalDirectories.filter((dir) => existsSync(dir));
     if (existingDirs.length > 0) {
       this.addResult({
         name: 'Project Structure',
         status: 'pass',
-        message: `Found directories: ${existingDirs.join(', ')}`
+        message: `Found directories: ${existingDirs.join(', ')}`,
       });
     } else {
       this.addResult({
         name: 'Project Structure',
         status: 'warn',
         message: 'No test directories found',
-        suggestion: 'Run "aws-testing-framework init" to set up project structure'
+        suggestion:
+          'Run "aws-testing-framework init" to set up project structure',
       });
     }
   }
@@ -255,27 +260,30 @@ class EnvironmentDoctor {
           name: 'Dependencies',
           status: 'fail',
           message: 'No package.json found',
-          suggestion: 'Initialize npm project with "npm init"'
+          suggestion: 'Initialize npm project with "npm init"',
         });
         return;
       }
 
       const packageJson = require(packageJsonPath);
-      const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      const dependencies = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
 
       // Check for aws-testing-framework
       if (dependencies['aws-testing-framework']) {
         this.addResult({
           name: 'AWS Testing Framework',
           status: 'pass',
-          message: `Installed: ${dependencies['aws-testing-framework']}`
+          message: `Installed: ${dependencies['aws-testing-framework']}`,
         });
       } else {
         this.addResult({
           name: 'AWS Testing Framework',
           status: 'fail',
           message: 'Not installed',
-          suggestion: 'Install with "npm install aws-testing-framework"'
+          suggestion: 'Install with "npm install aws-testing-framework"',
         });
       }
 
@@ -284,39 +292,39 @@ class EnvironmentDoctor {
         this.addResult({
           name: 'Cucumber.js',
           status: 'pass',
-          message: `Installed: ${dependencies['@cucumber/cucumber']}`
+          message: `Installed: ${dependencies['@cucumber/cucumber']}`,
         });
       } else {
         this.addResult({
           name: 'Cucumber.js',
           status: 'warn',
           message: 'Not found in dependencies',
-          suggestion: 'Install with "npm install @cucumber/cucumber"'
+          suggestion: 'Install with "npm install @cucumber/cucumber"',
         });
       }
 
       // Check for TypeScript
-      if (dependencies['typescript']) {
+      if (dependencies.typescript) {
         this.addResult({
           name: 'TypeScript',
           status: 'pass',
-          message: `Installed: ${dependencies['typescript']}`
+          message: `Installed: ${dependencies.typescript}`,
         });
       } else {
         this.addResult({
           name: 'TypeScript',
           status: 'warn',
           message: 'TypeScript not found',
-          suggestion: 'Install with "npm install typescript ts-node" for better type safety'
+          suggestion:
+            'Install with "npm install typescript ts-node" for better type safety',
         });
       }
-
-    } catch (error) {
+    } catch (_error) {
       this.addResult({
         name: 'Dependencies',
         status: 'fail',
         message: 'Error checking dependencies',
-        suggestion: 'Check package.json format'
+        suggestion: 'Check package.json format',
       });
     }
   }
@@ -324,30 +332,30 @@ class EnvironmentDoctor {
   private async checkPermissions(): Promise<void> {
     // Check write permissions for test reports
     try {
-      const testDir = './test-reports';
+      const _testDir = './test-reports';
       // In a real implementation, you'd actually test file system permissions
       this.addResult({
         name: 'File Permissions',
         status: 'pass',
-        message: 'Can write to current directory'
+        message: 'Can write to current directory',
       });
-    } catch (error) {
+    } catch (_error) {
       this.addResult({
         name: 'File Permissions',
         status: 'fail',
         message: 'Cannot write to current directory',
-        suggestion: 'Check directory permissions'
+        suggestion: 'Check directory permissions',
       });
     }
   }
 
   private addResult(result: CheckResult): void {
     this.results.push(result);
-    
+
     const statusIcon = {
       pass: '✅',
       warn: '⚠️ ',
-      fail: '❌'
+      fail: '❌',
     }[result.status];
 
     console.log(`${statusIcon} ${result.name}: ${result.message}`);
@@ -356,24 +364,29 @@ class EnvironmentDoctor {
     }
   }
 
-  getSummary(): { total: number; passed: number; warnings: number; failed: number } {
+  getSummary(): {
+    total: number;
+    passed: number;
+    warnings: number;
+    failed: number;
+  } {
     return {
       total: this.results.length,
-      passed: this.results.filter(r => r.status === 'pass').length,
-      warnings: this.results.filter(r => r.status === 'warn').length,
-      failed: this.results.filter(r => r.status === 'fail').length
+      passed: this.results.filter((r) => r.status === 'pass').length,
+      warnings: this.results.filter((r) => r.status === 'warn').length,
+      failed: this.results.filter((r) => r.status === 'fail').length,
     };
   }
 
   getFixableIssues(): CheckResult[] {
-    return this.results.filter(r => r.fixable && r.status !== 'pass');
+    return this.results.filter((r) => r.fixable && r.status !== 'pass');
   }
 }
 
 function parseArgs(): DoctorOptions {
   const args = process.argv.slice(2);
   const options: DoctorOptions = {};
-  
+
   for (const arg of args) {
     switch (arg) {
       case '--verbose':
@@ -389,7 +402,7 @@ function parseArgs(): DoctorOptions {
         break;
     }
   }
-  
+
   return options;
 }
 
@@ -426,7 +439,7 @@ Examples:
 
 async function main(): Promise<void> {
   const options = parseArgs();
-  
+
   if (options.help) {
     showHelp();
     process.exit(0);
@@ -446,31 +459,39 @@ async function main(): Promise<void> {
 
     if (summary.failed > 0) {
       console.log('\n🔧 Recommended Actions:');
-      const failedChecks = results.filter(r => r.status === 'fail' && r.suggestion);
-      failedChecks.forEach(check => {
+      const failedChecks = results.filter(
+        (r) => r.status === 'fail' && r.suggestion
+      );
+      failedChecks.forEach((check) => {
         console.log(`• ${check.suggestion}`);
       });
     }
 
     if (summary.warnings > 0) {
       console.log('\n💡 Suggestions:');
-      const warningChecks = results.filter(r => r.status === 'warn' && r.suggestion);
-      warningChecks.forEach(check => {
+      const warningChecks = results.filter(
+        (r) => r.status === 'warn' && r.suggestion
+      );
+      warningChecks.forEach((check) => {
         console.log(`• ${check.suggestion}`);
       });
     }
 
     if (summary.failed === 0 && summary.warnings === 0) {
-      console.log('\n🎉 Everything looks good! Your environment is ready for AWS testing.');
+      console.log(
+        '\n🎉 Everything looks good! Your environment is ready for AWS testing.'
+      );
     } else if (summary.failed === 0) {
-      console.log('\n✅ No critical issues found. Consider addressing warnings for optimal experience.');
+      console.log(
+        '\n✅ No critical issues found. Consider addressing warnings for optimal experience.'
+      );
     } else {
-      console.log('\n⚠️  Please address the failed checks before running tests.');
+      console.log(
+        '\n⚠️  Please address the failed checks before running tests.'
+      );
       process.exit(1);
     }
-
-  } catch (error) {
-    console.error('❌ Doctor check failed:', error instanceof Error ? error.message : 'Unknown error');
+  } catch (_error) {
     process.exit(1);
   }
 }

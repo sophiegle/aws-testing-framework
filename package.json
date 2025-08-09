@@ -28,7 +28,6 @@
     "test:dashboard": "npm test && node scripts/generate-dashboard.js",
     "test:coverage": "cucumber-js && npm run generate-report",
     "test:watch": "cucumber-js --watch",
-    "prepare": "npm run build",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "format": "biome format --write .",
@@ -44,7 +43,9 @@
     "docs:generate": "typedoc",
     "docs:build": "npm run docs:generate",
     "clean": "rm -rf dist coverage reports",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepare": "husky",
+    "pre-commit": "lint-staged"
   },
   "keywords": [
     "aws",
@@ -95,7 +96,9 @@
     "@types/node": "^24.0.10",
     "aws-sdk-client-mock": "^4.1.0",
     "esbuild": "^0.25.8",
+    "husky": "^9.0.0",
     "jest": "^30.0.0",
+    "lint-staged": "^15.0.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.0.0",
     "typedoc": "^0.28.5",
@@ -114,5 +117,14 @@
   "homepage": "https://github.com/sophiegle/aws-testing-framework#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "lint-staged": {
+    "*.{ts,js,json}": [
+      "biome check --write --no-errors-on-unmatched",
+      "biome format --write --no-errors-on-unmatched"
+    ],
+    "*.ts": [
+      "tsc --noEmit"
+    ]
   }
 }

@@ -20,7 +20,7 @@ export interface AWSTestingFrameworkConfig {
     /** Generate dashboard after each test run */
     autoGenerate?: boolean;
   };
-  
+
   /** Test execution settings */
   testing?: {
     /** Default timeout for AWS operations */
@@ -116,7 +116,7 @@ export class ConfigManager {
 
     const searchDir = startDir || process.cwd();
     const configPath = this.findConfigFile(searchDir);
-    
+
     if (configPath) {
       this.config = this.loadConfigFile(configPath);
       this.configPath = configPath;
@@ -138,7 +138,7 @@ export class ConfigManager {
       'awstf.config.js',
       'awstf.config.json',
       '.awstf.json',
-      '.aws-testing-framework.json'
+      '.aws-testing-framework.json',
     ];
 
     let currentDir = resolve(startDir);
@@ -151,12 +151,14 @@ export class ConfigManager {
           return configPath;
         }
       }
-      
+
       // Check in package.json
       const packageJsonPath = join(currentDir, 'package.json');
       if (existsSync(packageJsonPath)) {
         try {
-          const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+          const packageJson = JSON.parse(
+            readFileSync(packageJsonPath, 'utf-8')
+          );
           if (packageJson.awsTestingFramework) {
             return packageJsonPath;
           }
@@ -193,8 +195,7 @@ export class ConfigManager {
       }
 
       throw new Error(`Unsupported config file format: ${configPath}`);
-    } catch (error) {
-      console.warn(`Failed to load config from ${configPath}:`, error);
+    } catch (_error) {
       return this.getDefaultConfig();
     }
   }
@@ -244,8 +245,8 @@ export class ConfigManager {
         buildId: process.env.BUILD_ID || process.env.GITHUB_RUN_ID,
         branch: process.env.BRANCH_NAME || process.env.GITHUB_REF_NAME,
         commitHash: process.env.COMMIT_SHA || process.env.GITHUB_SHA,
-        pullRequestNumber: process.env.PULL_REQUEST_NUMBER 
-          ? parseInt(process.env.PULL_REQUEST_NUMBER, 10) 
+        pullRequestNumber: process.env.PULL_REQUEST_NUMBER
+          ? Number.parseInt(process.env.PULL_REQUEST_NUMBER, 10)
           : undefined,
       },
     };
@@ -264,17 +265,33 @@ export class ConfigManager {
   /**
    * Get dashboard configuration
    */
-  public getDashboardConfig(): NonNullable<AWSTestingFrameworkConfig['dashboard']> {
+  public getDashboardConfig(): NonNullable<
+    AWSTestingFrameworkConfig['dashboard']
+  > {
     const config = this.getConfig();
-    return config.dashboard || this.getDefaultConfig().dashboard!;
+    const defaultConfig = this.getDefaultConfig();
+    return (
+      config.dashboard ||
+      (defaultConfig.dashboard as NonNullable<
+        AWSTestingFrameworkConfig['dashboard']
+      >)
+    );
   }
 
   /**
    * Get reporting configuration
    */
-  public getReportingConfig(): NonNullable<AWSTestingFrameworkConfig['reporting']> {
+  public getReportingConfig(): NonNullable<
+    AWSTestingFrameworkConfig['reporting']
+  > {
     const config = this.getConfig();
-    return config.reporting || this.getDefaultConfig().reporting!;
+    const defaultConfig = this.getDefaultConfig();
+    return (
+      config.reporting ||
+      (defaultConfig.reporting as NonNullable<
+        AWSTestingFrameworkConfig['reporting']
+      >)
+    );
   }
 
   /**
@@ -282,7 +299,11 @@ export class ConfigManager {
    */
   public getCIConfig(): NonNullable<AWSTestingFrameworkConfig['ci']> {
     const config = this.getConfig();
-    return config.ci || this.getDefaultConfig().ci!;
+    const defaultConfig = this.getDefaultConfig();
+    return (
+      config.ci ||
+      (defaultConfig.ci as NonNullable<AWSTestingFrameworkConfig['ci']>)
+    );
   }
 
   /**

@@ -7,7 +7,10 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import inquirer from 'inquirer';
-import { ConfigManager, type AWSTestingFrameworkConfig } from '../config/ConfigManager';
+import {
+  type AWSTestingFrameworkConfig,
+  ConfigManager,
+} from '../config/ConfigManager';
 
 interface ConfigWizardOptions {
   interactive?: boolean;
@@ -41,20 +44,20 @@ class ConfigurationWizard {
         type: 'confirm',
         name: 'enableDashboard',
         message: 'Enable dashboard generation?',
-        default: true
+        default: true,
       },
       {
         type: 'confirm',
         name: 'autoGenerate',
         message: 'Auto-generate dashboard after tests?',
         default: true,
-        when: (answers) => answers.enableDashboard
-      }
+        when: (answers) => answers.enableDashboard,
+      },
     ]);
 
     this.config.dashboard = {
       enabled: basicAnswers.enableDashboard,
-      autoGenerate: basicAnswers.autoGenerate || false
+      autoGenerate: basicAnswers.autoGenerate || false,
     };
 
     console.log();
@@ -71,7 +74,7 @@ class ConfigurationWizard {
         type: 'input',
         name: 'outputDir',
         message: 'Dashboard output directory:',
-        default: './test-reports'
+        default: './test-reports',
       },
       {
         type: 'checkbox',
@@ -79,35 +82,36 @@ class ConfigurationWizard {
         message: 'Select dashboard themes:',
         choices: [
           { name: 'Light theme', value: 'light', checked: true },
-          { name: 'Dark theme', value: 'dark', checked: true }
+          { name: 'Dark theme', value: 'dark', checked: true },
         ],
-        validate: (input) => input.length > 0 || 'Please select at least one theme'
+        validate: (input) =>
+          input.length > 0 || 'Please select at least one theme',
       },
       {
         type: 'confirm',
         name: 'autoOpen',
         message: 'Auto-open dashboard in browser (development only)?',
-        default: false
+        default: false,
       },
       {
         type: 'confirm',
         name: 'showPerformanceMetrics',
         message: 'Include performance metrics in dashboard?',
-        default: true
+        default: true,
       },
       {
         type: 'confirm',
         name: 'showStepDetails',
         message: 'Include step details in dashboard?',
-        default: true
+        default: true,
       },
       {
         type: 'number',
         name: 'maxFeaturesToShow',
         message: 'Maximum number of features to show in dashboard:',
         default: 50,
-        validate: (input) => input > 0 || 'Please enter a positive number'
-      }
+        validate: (input) => input > 0 || 'Please enter a positive number',
+      },
     ]);
 
     this.config.dashboard = {
@@ -118,13 +122,13 @@ class ConfigurationWizard {
       lightTheme: {
         showPerformanceMetrics: dashboardAnswers.showPerformanceMetrics,
         showStepDetails: dashboardAnswers.showStepDetails,
-        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow
+        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow,
       },
       darkTheme: {
         showPerformanceMetrics: dashboardAnswers.showPerformanceMetrics,
         showStepDetails: dashboardAnswers.showStepDetails,
-        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow
-      }
+        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow,
+      },
     };
 
     console.log();
@@ -140,28 +144,28 @@ class ConfigurationWizard {
         name: 'defaultTimeout',
         message: 'Default timeout for AWS operations (milliseconds):',
         default: 30000,
-        validate: (input) => input > 0 || 'Please enter a positive number'
+        validate: (input) => input > 0 || 'Please enter a positive number',
       },
       {
         type: 'number',
         name: 'retryAttempts',
         message: 'Number of retry attempts for failed operations:',
         default: 3,
-        validate: (input) => input >= 0 || 'Please enter a non-negative number'
+        validate: (input) => input >= 0 || 'Please enter a non-negative number',
       },
       {
         type: 'number',
         name: 'retryDelay',
         message: 'Delay between retries (milliseconds):',
         default: 1000,
-        validate: (input) => input >= 0 || 'Please enter a non-negative number'
+        validate: (input) => input >= 0 || 'Please enter a non-negative number',
       },
       {
         type: 'confirm',
         name: 'verbose',
         message: 'Enable verbose logging?',
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     this.config.testing = testingAnswers;
@@ -173,7 +177,7 @@ class ConfigurationWizard {
     console.log('--------------------\n');
 
     const detectedRegion = process.env.AWS_REGION || 'us-east-1';
-    
+
     const awsAnswers = await inquirer.prompt([
       {
         type: 'list',
@@ -191,37 +195,37 @@ class ConfigurationWizard {
           'ap-southeast-2',
           'ap-northeast-1',
           new inquirer.Separator(),
-          { name: 'Other (enter manually)', value: 'custom' }
+          { name: 'Other (enter manually)', value: 'custom' },
         ],
-        default: detectedRegion
+        default: detectedRegion,
       },
       {
         type: 'input',
         name: 'customRegion',
         message: 'Enter AWS region:',
         when: (answers) => answers.region === 'custom',
-        validate: (input) => input.length > 0 || 'Please enter a region'
+        validate: (input) => input.length > 0 || 'Please enter a region',
       },
       {
         type: 'number',
         name: 'maxRetries',
         message: 'Maximum retry attempts for AWS SDK:',
         default: 3,
-        validate: (input) => input >= 0 || 'Please enter a non-negative number'
+        validate: (input) => input >= 0 || 'Please enter a non-negative number',
       },
       {
         type: 'number',
         name: 'timeout',
         message: 'AWS request timeout (milliseconds):',
         default: 10000,
-        validate: (input) => input > 0 || 'Please enter a positive number'
-      }
+        validate: (input) => input > 0 || 'Please enter a positive number',
+      },
     ]);
 
     this.config.aws = {
       region: awsAnswers.customRegion || awsAnswers.region,
       maxRetries: awsAnswers.maxRetries,
-      timeout: awsAnswers.timeout
+      timeout: awsAnswers.timeout,
     };
 
     console.log();
@@ -240,35 +244,35 @@ class ConfigurationWizard {
         name: 'environment',
         message: 'Environment type:',
         choices: ['development', 'staging', 'production', 'ci'],
-        default: detectedEnv
+        default: detectedEnv,
       },
       {
         type: 'confirm',
         name: 'configureS3Upload',
         message: 'Configure S3 upload for test reports?',
         default: false,
-        when: (answers) => answers.environment !== 'development'
+        when: (answers) => answers.environment !== 'development',
       },
       {
         type: 'input',
         name: 's3Bucket',
         message: 'S3 bucket for reports:',
         when: (answers) => answers.configureS3Upload,
-        validate: (input) => input.length > 0 || 'Please enter a bucket name'
+        validate: (input) => input.length > 0 || 'Please enter a bucket name',
       },
       {
         type: 'input',
         name: 's3Prefix',
         message: 'S3 prefix for reports (optional):',
         default: 'test-reports',
-        when: (answers) => answers.configureS3Upload
+        when: (answers) => answers.configureS3Upload,
       },
       {
         type: 'confirm',
         name: 'configureSlack',
         message: 'Configure Slack notifications?',
         default: false,
-        when: (answers) => answers.environment !== 'development'
+        when: (answers) => answers.environment !== 'development',
       },
       {
         type: 'input',
@@ -276,47 +280,48 @@ class ConfigurationWizard {
         message: 'Slack channel for notifications:',
         default: '#test-results',
         when: (answers) => answers.configureSlack,
-        validate: (input) => input.startsWith('#') || 'Channel name should start with #'
+        validate: (input) =>
+          input.startsWith('#') || 'Channel name should start with #',
       },
       {
         type: 'confirm',
         name: 'slackOnFailure',
         message: 'Send Slack notifications on test failures?',
         default: true,
-        when: (answers) => answers.configureSlack
+        when: (answers) => answers.configureSlack,
       },
       {
         type: 'confirm',
         name: 'slackOnSuccess',
         message: 'Send Slack notifications on test success?',
         default: false,
-        when: (answers) => answers.configureSlack
-      }
+        when: (answers) => answers.configureSlack,
+      },
     ]);
 
     this.config.ci = {
       environment: ciAnswers.environment,
       buildId: process.env.BUILD_ID || process.env.GITHUB_RUN_ID,
       branch: process.env.BRANCH_NAME || process.env.GITHUB_REF_NAME,
-      commitHash: process.env.COMMIT_SHA || process.env.GITHUB_SHA
+      commitHash: process.env.COMMIT_SHA || process.env.GITHUB_SHA,
     };
 
     if (ciAnswers.configureS3Upload) {
       this.config.ci.uploadToS3 = {
         bucket: ciAnswers.s3Bucket,
         prefix: ciAnswers.s3Prefix,
-        region: this.config.aws?.region || 'us-east-1'
+        region: this.config.aws?.region || 'us-east-1',
       };
     }
 
     if (ciAnswers.configureSlack) {
       this.config.ci.notifications = {
         slack: {
-          webhookUrl: '${SLACK_WEBHOOK_URL}', // Will be replaced from env
+          webhookUrl: 'SLACK_WEBHOOK_URL_PLACEHOLDER', // Will be replaced from env
           channel: ciAnswers.slackChannel,
           onFailure: ciAnswers.slackOnFailure,
-          onSuccess: ciAnswers.slackOnSuccess
-        }
+          onSuccess: ciAnswers.slackOnSuccess,
+        },
       };
     }
 
@@ -327,7 +332,11 @@ class ConfigurationWizard {
     const files: Record<string, string> = {};
 
     // Main config file
-    files['aws-testing-framework.config.json'] = JSON.stringify(this.config, null, 2);
+    files['aws-testing-framework.config.json'] = JSON.stringify(
+      this.config,
+      null,
+      2
+    );
 
     // Development-specific config
     const devConfig = {
@@ -335,13 +344,13 @@ class ConfigurationWizard {
       dashboard: {
         ...this.config.dashboard,
         autoOpen: true,
-        themes: ['light']
+        themes: ['light'],
       },
       testing: {
         ...this.config.testing,
         verbose: true,
-        defaultTimeout: 60000
-      }
+        defaultTimeout: 60000,
+      },
     };
     files['development.config.json'] = JSON.stringify(devConfig, null, 2);
 
@@ -350,12 +359,12 @@ class ConfigurationWizard {
       ...this.config,
       dashboard: {
         ...this.config.dashboard,
-        autoOpen: false
+        autoOpen: false,
       },
       testing: {
         ...this.config.testing,
-        verbose: false
-      }
+        verbose: false,
+      },
     };
     files['ci.config.json'] = JSON.stringify(ciConfig, null, 2);
 
@@ -366,10 +375,10 @@ class ConfigurationWizard {
 function parseArgs(): ConfigWizardOptions {
   const args = process.argv.slice(2);
   const options: ConfigWizardOptions = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case '--interactive':
       case '-i':
@@ -388,7 +397,7 @@ function parseArgs(): ConfigWizardOptions {
         break;
     }
   }
-  
+
   return options;
 }
 
@@ -430,7 +439,7 @@ async function detectCurrentSetup(): Promise<void> {
   // Check for existing configs
   const configManager = ConfigManager.getInstance();
   const existingConfigPath = configManager.getConfigPath();
-  
+
   if (existingConfigPath) {
     console.log(`✅ Found existing config: ${existingConfigPath}`);
   } else {
@@ -458,7 +467,7 @@ async function detectCurrentSetup(): Promise<void> {
 
 async function main(): Promise<void> {
   const options = parseArgs();
-  
+
   if (options.help) {
     showHelp();
     process.exit(0);
@@ -468,7 +477,7 @@ async function main(): Promise<void> {
     await detectCurrentSetup();
 
     const wizard = new ConfigurationWizard();
-    const config = await wizard.runWizard();
+    const _config = await wizard.runWizard();
 
     console.log('💾 Generating Configuration Files');
     console.log('=================================');
@@ -478,9 +487,11 @@ async function main(): Promise<void> {
 
     for (const [fileName, content] of Object.entries(files)) {
       const filePath = join(outputDir, fileName);
-      
+
       if (existsSync(filePath) && !options.overwrite) {
-        console.log(`⚠️  Skipping ${fileName} (already exists, use --overwrite to replace)`);
+        console.log(
+          `⚠️  Skipping ${fileName} (already exists, use --overwrite to replace)`
+        );
         continue;
       }
 
@@ -497,9 +508,12 @@ async function main(): Promise<void> {
     console.log('• Use development.config.json for local development');
     console.log('• Use ci.config.json for CI/CD pipelines');
     console.log('• Check examples/config/ for more advanced configurations');
-
   } catch (error) {
-    console.error('❌ Configuration failed:', error instanceof Error ? error.message : 'Unknown error');
+    // biome-ignore lint/suspicious/noConsole: CLI script requires console output
+    console.error(
+      '❌ Configuration failed:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     process.exit(1);
   }
 }
