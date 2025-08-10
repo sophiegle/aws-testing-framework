@@ -1,0 +1,45 @@
+# Source files
+src/
+tsconfig.json
+typedoc.json
+
+# Test files
+**/*.test.*
+**/*.spec.*
+**/__tests__/
+**/coverage/
+**/reports/
+**/*.map
+
+# Development files
+.biome/
+node_modules/
+.git/
+.github/
+.vscode/
+*.log
+
+# Build artifacts (keep dist/ but exclude source maps)
+dist/**/*.map
+
+# Configuration files
+biome.json
+jest.config.js
+stryker.conf.js
+cucumber.js
+
+# Scripts
+scripts/
+
+# Examples
+examples/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml

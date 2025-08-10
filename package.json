@@ -22,6 +22,14 @@
     "dist",
     "README.md"
   ],
+  "exclude": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/__tests__/**",
+    "**/coverage/**",
+    "**/reports/**",
+    "**/*.map"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
