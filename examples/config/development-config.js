@@ -35,6 +35,11 @@ module.exports = {
     timeout: 15000,
   },
 
+  lambda: {
+    defaultInvocationTimeout: 600000, // 10 minutes for debugging
+    maxInvocationTimeout: 1800000, // 30 minutes max
+  },
+
   ci: {
     environment: 'development',
     branch: process.env.BRANCH_NAME || 'local',

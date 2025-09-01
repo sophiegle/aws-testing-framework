@@ -129,7 +129,8 @@ export class AWSTestingFramework {
     this.sqsService = new SQSService(this.sqsClient);
     this.lambdaService = new LambdaService(
       this.lambdaClient,
-      this.cloudWatchLogsClient
+      this.cloudWatchLogsClient,
+      this.config.lambda
     );
     this.stepFunctionService = new StepFunctionService(this.sfnClient);
     this.performanceMonitor = new PerformanceMonitor();

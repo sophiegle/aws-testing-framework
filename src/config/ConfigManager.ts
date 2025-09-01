@@ -43,6 +43,14 @@ export interface AWSTestingFrameworkConfig {
     timeout?: number;
   };
 
+  /** Lambda-specific configuration */
+  lambda?: {
+    /** Default timeout for Lambda invocations in milliseconds */
+    defaultInvocationTimeout?: number;
+    /** Maximum timeout for Lambda invocations in milliseconds */
+    maxInvocationTimeout?: number;
+  };
+
   /** Reporting configuration */
   reporting?: {
     /** Base directory for all reports */
@@ -229,9 +237,13 @@ export class ConfigManager {
         verbose: false,
       },
       aws: {
-        region: process.env.AWS_REGION || 'us-east-1',
+        region: process.env.AWS_REGION || 'eu-west-2',
         maxRetries: 3,
         timeout: 10000,
+      },
+      lambda: {
+        defaultInvocationTimeout: 300000, // 5 minutes
+        maxInvocationTimeout: 900000, // 15 minutes
       },
       reporting: {
         baseDir: './test-reports',

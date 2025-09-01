@@ -18,6 +18,12 @@ export interface FrameworkConfig {
   enableLogging?: boolean;
   logLevel?: 'debug' | 'info' | 'warn' | 'error';
   testDataDir?: string;
+  lambda?: {
+    /** Default timeout for Lambda invocations in milliseconds */
+    defaultInvocationTimeout?: number;
+    /** Maximum timeout for Lambda invocations in milliseconds */
+    maxInvocationTimeout?: number;
+  };
 }
 
 export interface StepContext {

@@ -26,6 +26,36 @@ When(
   }
 );
 
+When(
+  'I invoke the Lambda function with payload {string} and timeout {int} seconds',
+  async function (this: StepContext, payload: string, timeoutSeconds: number) {
+    if (!this.functionName) {
+      throw new Error(
+        'Function name is not set. Make sure to create a Lambda function first.'
+      );
+    }
+    const timeoutMs = timeoutSeconds * 1000;
+    await lambdaService.invokeFunction(this.functionName, JSON.parse(payload), {
+      timeout: timeoutMs,
+    });
+  }
+);
+
+When(
+  'I invoke the Lambda function with payload {string} and timeout {int} minutes',
+  async function (this: StepContext, payload: string, timeoutMinutes: number) {
+    if (!this.functionName) {
+      throw new Error(
+        'Function name is not set. Make sure to create a Lambda function first.'
+      );
+    }
+    const timeoutMs = timeoutMinutes * 60 * 1000;
+    await lambdaService.invokeFunction(this.functionName, JSON.parse(payload), {
+      timeout: timeoutMs,
+    });
+  }
+);
+
 Then(
   'the Lambda function should return {string}',
   async function (this: StepContext, expectedResult: string) {

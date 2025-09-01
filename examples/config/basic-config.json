@@ -24,5 +24,9 @@
     "region": "us-east-1",
     "maxRetries": 3,
     "timeout": 10000
+  },
+  "lambda": {
+    "defaultInvocationTimeout": 300000,
+    "maxInvocationTimeout": 900000
   }
 }

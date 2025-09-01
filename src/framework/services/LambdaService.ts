@@ -8,16 +8,30 @@ import {
   type LambdaClient,
 } from '@aws-sdk/client-lambda';
 
+export interface LambdaServiceConfig {
+  /** Default timeout for Lambda invocations in milliseconds */
+  defaultInvocationTimeout?: number;
+  /** Maximum timeout for Lambda invocations in milliseconds */
+  maxInvocationTimeout?: number;
+}
+
 export class LambdaService {
   private lambdaClient: LambdaClient;
   private cloudWatchLogsClient: CloudWatchLogsClient;
+  private config: LambdaServiceConfig;
 
   constructor(
     lambdaClient: LambdaClient,
-    cloudWatchLogsClient: CloudWatchLogsClient
+    cloudWatchLogsClient: CloudWatchLogsClient,
+    config: LambdaServiceConfig = {}
   ) {
     this.lambdaClient = lambdaClient;
     this.cloudWatchLogsClient = cloudWatchLogsClient;
+    this.config = {
+      defaultInvocationTimeout: 300000, // 5 minutes default
+      maxInvocationTimeout: 900000, // 15 minutes max
+      ...config,
+    };
   }
 
   async findFunction(functionName: string): Promise<void> {
@@ -32,14 +46,40 @@ export class LambdaService {
 
   async invokeFunction(
     functionName: string,
-    payload: Record<string, unknown>
+    payload: Record<string, unknown>,
+    options?: {
+      timeout?: number;
+      invocationType?: 'RequestResponse' | 'Event' | 'DryRun';
+    }
   ): Promise<{ Payload?: string } | null> {
-    const response = await this.lambdaClient.send(
-      new InvokeCommand({
-        FunctionName: functionName,
-        Payload: Buffer.from(JSON.stringify(payload)),
-      })
-    );
+    const timeout = options?.timeout || this.config.defaultInvocationTimeout;
+
+    // Validate timeout is within limits
+    if (timeout && timeout > (this.config.maxInvocationTimeout || 900000)) {
+      throw new Error(
+        `Lambda invocation timeout (${timeout}ms) exceeds maximum allowed timeout (${this.config.maxInvocationTimeout}ms)`
+      );
+    }
+
+    const invokeCommand = new InvokeCommand({
+      FunctionName: functionName,
+      Payload: Buffer.from(JSON.stringify(payload)),
+      InvocationType: options?.invocationType || 'RequestResponse',
+    });
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Lambda invocation timed out after ${timeout}ms`));
+      }, timeout);
+    });
+
+    // Race between the actual invocation and timeout
+    const response = await Promise.race([
+      this.lambdaClient.send(invokeCommand),
+      timeoutPromise,
+    ]);
+
     return {
       Payload: response.Payload
         ? Buffer.from(response.Payload).toString()
