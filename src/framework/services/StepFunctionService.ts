@@ -235,6 +235,35 @@ export class StepFunctionService {
   }
 
   /**
+   * Get the execution details
+   * @param executionArn - ARN of the execution to get details for
+   * @returns Promise resolving to the execution details
+   */
+  async getExecutionDetails(executionArn: string): Promise<ExecutionDetails> {
+    return this.retryOperation(async () => {
+      this.log(`Getting execution details: ${executionArn}`);
+      const response = await this.sfnClient.send(
+        new DescribeExecutionCommand({ executionArn })
+      );
+      if (!response.executionArn) {
+        throw new StepFunctionError(
+          `Execution ARN not found for ${executionArn}`,
+          'getExecutionDetails'
+        );
+      }
+      return {
+        executionArn: response.executionArn,
+        stateMachineArn: response.stateMachineArn || '',
+        startDate: response.startDate || new Date(),
+        status: response.status || '',
+        stopDate: response.stopDate,
+        input: response.input,
+        output: response.output,
+      };
+    }, 'getExecutionDetails');
+  }
+
+  /**
    * Check if Step Function has been executed recently
    * @param stateMachineName - Name of the state machine to check
    * @returns Promise resolving to true if recent executions exist

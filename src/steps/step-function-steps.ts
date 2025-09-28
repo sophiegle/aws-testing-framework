@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import type { ExecutionDetails, StepContext } from '../framework/types';
+import type { StepContext } from '../framework/types';
 import { AWSTestingFramework } from '../index';
 
 const framework = new AWSTestingFramework();
@@ -54,7 +54,8 @@ Given(
       this.loggingEnabled = true;
     }
 
-    const stateMachineArn = await framework.findStateMachine(stateMachineName);
+    const stateMachineArn =
+      await framework.stepFunctionService.findStateMachine(stateMachineName);
     this.stateMachineArn = stateMachineArn;
   }
 );
@@ -70,7 +71,7 @@ When(
 
     try {
       const executionInput = JSON.parse(input);
-      const executionArn = await framework.startExecution(
+      const executionArn = await framework.stepFunctionService.startExecution(
         stateMachineArn,
         executionInput
       );
@@ -94,13 +95,15 @@ Then(
     const executionArn = requireExecutionArn(this);
 
     // Wait for execution to complete
-    let status = await framework.getExecutionStatus(executionArn);
+    let status =
+      await framework.stepFunctionService.getExecutionStatus(executionArn);
     const startTime = Date.now();
     const timeout = 60000; // 1 minute timeout
 
     while (status === 'RUNNING' && Date.now() - startTime < timeout) {
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
-      status = await framework.getExecutionStatus(executionArn);
+      status =
+        await framework.stepFunctionService.getExecutionStatus(executionArn);
     }
 
     if (status !== 'SUCCEEDED') {
@@ -116,7 +119,9 @@ Then(
     const stateMachineName = requireStateMachineName(this);
 
     const definition =
-      await framework.verifyStepFunctionDefinition(stateMachineName);
+      await framework.stepFunctionService.verifyStepFunctionDefinition(
+        stateMachineName
+      );
 
     if (!definition.isValid) {
       throw new Error(
@@ -144,26 +149,29 @@ Then(
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // First, try to check if the Step Function was triggered by the Lambda function
-    if (this.functionName) {
-      const lambdaTriggeredStepFunction =
-        await framework.verifyLambdaTriggeredStateMachine(
-          this.functionName,
-          stateMachineName
-        );
-      if (lambdaTriggeredStepFunction) {
-        return; // Success - Lambda triggered the Step Function
-      }
-    }
+    // TODO: (refactor): Uncomment this when the Lambda Service is implemented
+    // if (this.functionName) {
+    //   const lambdaTriggeredStepFunction =
+    //     await framework.stepFunctionService.verifyLambdaTriggeredStateMachine(
+    //       this.functionName,
+    //       stateMachineName
+    //     );
+    //   if (lambdaTriggeredStepFunction) {
+    //     return; // Success - Lambda triggered the Step Function
+    //   }
+    // }
 
     // If Lambda didn't trigger it, check for any recent executions
-    const stateMachineTriggered = await framework.verifyStateMachineTriggered(
-      stateMachineName,
-      30000 // 30 second timeout
-    );
+    const stateMachineTriggered =
+      await framework.stepFunctionService.verifyStateMachineTriggered(
+        stateMachineName,
+        30000 // 30 second timeout
+      );
 
     if (!stateMachineTriggered) {
       // As a fallback, check if there are any executions at all
-      const executions = await framework.listExecutions(stateMachineName);
+      const executions =
+        await framework.stepFunctionService.listExecutions(stateMachineName);
       if (executions.length === 0) {
         throw new Error(
           `Step Function "${stateMachineName}" was not executed - no executions found`
@@ -172,16 +180,11 @@ Then(
       // There are executions, but they might not be recent enough
       // Let's check the execution details to see if any are recent
       const executionDetails =
-        await framework.getExecutionDetails(stateMachineName);
-      const recentExecutions = executionDetails.filter(
-        (execution: ExecutionDetails) => {
-          const executionTime = new Date(execution.startDate).getTime();
-          const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-          return executionTime > fiveMinutesAgo;
-        }
-      );
+        await framework.stepFunctionService.getStepFunctionExecutionHistory(
+          stateMachineName
+        );
 
-      if (recentExecutions.length === 0) {
+      if (executionDetails.length === 0) {
         throw new Error(
           `Step Function "${stateMachineName}" was not executed recently - only old executions found (${executionDetails.length} total executions, none in last 5 minutes)`
         );
@@ -204,7 +207,8 @@ Then(
 
     switch (operation) {
       case 'list executions': {
-        const executions = await framework.listExecutions(stateMachineName);
+        const executions =
+          await framework.stepFunctionService.listExecutions(stateMachineName);
         if (!Array.isArray(executions)) {
           throw new Error('Failed to list executions - expected array result');
         }
@@ -213,7 +217,9 @@ Then(
 
       case 'track execution details': {
         const executionDetails =
-          await framework.getExecutionDetails(stateMachineName);
+          await framework.stepFunctionService.getExecutionDetails(
+            stateMachineName
+          );
         if (!Array.isArray(executionDetails)) {
           throw new Error(
             'Failed to track execution details - expected array result'
@@ -229,7 +235,9 @@ Then(
           );
         }
         const history =
-          await framework.getStepFunctionExecutionHistory(executionArn);
+          await framework.stepFunctionService.getStepFunctionExecutionHistory(
+            executionArn
+          );
         if (!Array.isArray(history)) {
           throw new Error(
             'Failed to get execution history - expected array result'
@@ -245,7 +253,9 @@ Then(
           );
         }
         const stateOutputs =
-          await framework.getStepFunctionStateOutput(executionArn);
+          await framework.stepFunctionService.getStepFunctionStateOutput(
+            executionArn
+          );
         if (!Array.isArray(stateOutputs)) {
           throw new Error(
             'Failed to get state outputs - expected array result'
@@ -260,7 +270,10 @@ Then(
             'Execution ARN is not set. Make sure to start an execution first.'
           );
         }
-        const dataFlow = await framework.getStepFunctionDataFlow(executionArn);
+        const dataFlow =
+          await framework.stepFunctionService.getStepFunctionDataFlow(
+            executionArn
+          );
         if (
           !dataFlow ||
           typeof dataFlow.dataLoss !== 'boolean' ||
@@ -284,10 +297,11 @@ Then(
           maxStateExecutionTime: 10000, // 10 seconds
           maxColdStartTime: 5000, // 5 seconds
         };
-        const slaVerification = await framework.verifyStepFunctionSLAs(
-          executionArn,
-          slas
-        );
+        const slaVerification =
+          await framework.stepFunctionService.verifyStepFunctionSLAs(
+            executionArn,
+            slas
+          );
         if (typeof slaVerification.meetsSLAs !== 'boolean') {
           throw new Error('Failed to verify SLAs - expected boolean result');
         }
@@ -296,7 +310,9 @@ Then(
 
       case 'check if the Step Function has recent executions': {
         const hasExecutions =
-          await framework.checkStateMachineExecution(stateMachineName);
+          await framework.stepFunctionService.checkStateMachineExecution(
+            stateMachineName
+          );
         if (typeof hasExecutions !== 'boolean') {
           throw new Error(
             'Failed to check state machine execution - expected boolean result'
@@ -318,11 +334,12 @@ Then(
     const executionArn = requireExecutionArn(this);
     const expectedOutput = JSON.parse(expectedData);
 
-    const verification = await framework.verifyStepFunctionStateOutput(
-      executionArn,
-      stateName,
-      expectedOutput
-    );
+    const verification =
+      await framework.stepFunctionService.verifyStepFunctionStateOutput(
+        executionArn,
+        stateName,
+        expectedOutput
+      );
 
     if (typeof verification.matches !== 'boolean') {
       throw new Error(
@@ -339,10 +356,11 @@ Then(
     const executionArn = requireExecutionArn(this);
     const stateList = expectedStates.split(',').map((s) => s.trim());
 
-    const result = await framework.verifyStepFunctionExecutionSuccess(
-      executionArn,
-      stateList
-    );
+    const result =
+      await framework.stepFunctionService.verifyStepFunctionExecutionSuccess(
+        executionArn,
+        stateList
+      );
 
     if (!result.success) {
       const missingStates = stateList.filter(
@@ -361,7 +379,9 @@ Then(
     const executionArn = requireExecutionArn(this);
 
     const result =
-      await framework.verifyStepFunctionExecutionSuccess(executionArn);
+      await framework.stepFunctionService.verifyStepFunctionExecutionSuccess(
+        executionArn
+      );
 
     if (result.executionTime > maxExecutionTimeMs) {
       throw new Error(
@@ -379,22 +399,22 @@ Then(
     // If executionArn is not set, fetch the most recent execution for the state machine
     if (!executionArn) {
       const stateMachineName = requireStateMachineName(this);
-      const executions = await framework.getExecutionDetails(stateMachineName);
-      if (!executions.length) {
+      const executions =
+        await framework.stepFunctionService.getExecutionDetails(
+          stateMachineName
+        );
+      if (!executions) {
         throw new Error(
           `No executions found for Step Function "${stateMachineName}". Cannot check performance.`
         );
       }
-      // Use the most recent execution
-      executions.sort(
-        (a: ExecutionDetails, b: ExecutionDetails) =>
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-      );
-      executionArn = executions[0].executionArn;
+      executionArn = executions.executionArn;
     }
 
     const performance =
-      await framework.checkStepFunctionPerformance(executionArn);
+      await framework.stepFunctionService.checkStepFunctionPerformance(
+        executionArn
+      );
 
     // Basic performance checks
     if (performance.totalExecutionTime > 60000) {
@@ -420,10 +440,11 @@ Then(
     const stateMachineName = requireStateMachineName(this);
     const timeoutMs = timeoutSeconds * 1000;
 
-    const triggered = await framework.verifyStateMachineTriggered(
-      stateMachineName,
-      timeoutMs
-    );
+    const triggered =
+      await framework.stepFunctionService.verifyStateMachineTriggered(
+        stateMachineName,
+        timeoutMs
+      );
 
     if (!triggered) {
       throw new Error(
@@ -440,7 +461,9 @@ Then(
     const stateMachineName = requireStateMachineName(this);
 
     const definition =
-      await framework.verifyStepFunctionDefinition(stateMachineName);
+      await framework.stepFunctionService.verifyStepFunctionDefinition(
+        stateMachineName
+      );
 
     if (definition.stateCount < minStateCount) {
       throw new Error(
@@ -456,7 +479,8 @@ Then(
   async function (this: StepContext) {
     const executionArn = requireExecutionArn(this);
 
-    const dataFlow = await framework.getStepFunctionDataFlow(executionArn);
+    const dataFlow =
+      await framework.stepFunctionService.getStepFunctionDataFlow(executionArn);
 
     if (dataFlow.dataLoss) {
       throw new Error('Step Function execution has data loss');
@@ -499,7 +523,8 @@ Then(
       case 'all operations should use the custom configuration settings': {
         // Verify that operations work with custom configuration
         const stateMachineName = requireStateMachineName(this);
-        const executions = await framework.listExecutions(stateMachineName);
+        const executions =
+          await framework.stepFunctionService.listExecutions(stateMachineName);
         if (!Array.isArray(executions)) {
           throw new Error('Custom configuration operations failed');
         }
@@ -509,7 +534,8 @@ Then(
       case 'the service should handle transient failures gracefully':
       case 'the operation should retry with exponential backoff': {
         // Verify that the execution completed despite potential transient failures
-        const status = await framework.getExecutionStatus(executionArn);
+        const status =
+          await framework.stepFunctionService.getExecutionStatus(executionArn);
         if (status !== 'SUCCEEDED' && status !== 'RUNNING') {
           throw new Error(
             `Execution failed to handle transient failures: ${status}`
@@ -520,7 +546,8 @@ Then(
 
       case 'the service should log all operations with appropriate detail': {
         // Verify that operations complete (indicating logging doesn't interfere)
-        const logStatus = await framework.getExecutionStatus(executionArn);
+        const logStatus =
+          await framework.stepFunctionService.getExecutionStatus(executionArn);
         if (logStatus !== 'SUCCEEDED' && logStatus !== 'RUNNING') {
           throw new Error(
             `Operations failed with logging enabled: ${logStatus}`
@@ -532,7 +559,9 @@ Then(
       case 'the logs should include timing and performance metrics': {
         // Verify that performance analysis works (indicating metrics are collected)
         const performance =
-          await framework.checkStepFunctionPerformance(executionArn);
+          await framework.stepFunctionService.checkStepFunctionPerformance(
+            executionArn
+          );
         if (typeof performance.totalExecutionTime !== 'number') {
           throw new Error('Performance metrics not available');
         }

@@ -9,7 +9,7 @@ Given(
   'I have an SQS queue named {string}',
   async function (this: StepContext, queueName: string) {
     this.queueName = queueName;
-    this.queueUrl = await framework.findQueue(queueName);
+    this.queueUrl = await framework.sqsService.findQueue(queueName);
   }
 );
 
@@ -21,7 +21,7 @@ When(
         'Queue URL is not set. Make sure to create a queue first.'
       );
     }
-    await framework.sendMessage(this.queueUrl, message);
+    await framework.sqsService.sendMessage(this.queueUrl, message);
   }
 );
 
@@ -33,9 +33,11 @@ Then(
         'Queue URL is not set. Make sure to create a queue first.'
       );
     }
-    await framework.waitForCondition(async () => {
+    await framework.healthValidator.waitForCondition(async () => {
       if (!this.queueUrl) return false;
-      const unreadCount = await framework.getUnreadMessageCount(this.queueUrl);
+      const unreadCount = await framework.sqsService.getUnreadMessageCount(
+        this.queueUrl
+      );
       return unreadCount > 0;
     }, 30000);
   }

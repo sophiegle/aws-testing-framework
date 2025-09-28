@@ -64,7 +64,7 @@ Then(
         'Function name is not set. Make sure to create a Lambda function first.'
       );
     }
-    await framework.waitForCondition(async () => {
+    await framework.healthValidator.waitForCondition(async () => {
       if (!this.functionName) return false;
       const result = await lambdaService.invokeFunction(this.functionName, {});
       return result?.Payload === expectedResult;
@@ -81,7 +81,7 @@ Then(
       );
     }
 
-    await framework.waitForCondition(async () => {
+    await framework.healthValidator.waitForCondition(async () => {
       if (!this.functionName) return false;
       const lambdaTriggered = await lambdaService.checkLambdaExecution(
         this.functionName
@@ -100,12 +100,13 @@ Then(
       );
     }
 
-    await framework.waitForCondition(async () => {
+    await framework.healthValidator.waitForCondition(async () => {
       if (!this.functionName) return false;
-      const actualCount = await framework.countLambdaExecutionsInLastMinutes(
-        this.functionName,
-        minutes
-      );
+      const actualCount =
+        await framework.lambdaService.countLambdaExecutionsInLastMinutes(
+          this.functionName,
+          minutes
+        );
       return actualCount >= expectedCount;
     }, 60000); // Wait up to 1 minute for the condition to be met
   }
@@ -154,7 +155,7 @@ Then(
     const startTime = new Date(Date.now() - 60000);
     const endTime = new Date();
 
-    const logs = await framework.getLambdaLogs(
+    const logs = await framework.lambdaService.getLambdaLogs(
       this.functionName,
       startTime,
       endTime

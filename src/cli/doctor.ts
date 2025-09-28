@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { CloudWatchLogsClient } from '@aws-sdk/client-cloudwatch-logs';
+import { LambdaClient } from '@aws-sdk/client-lambda';
 /**
  * Health check and environment validation for AWS Testing Framework
  */
+import { S3Client } from '@aws-sdk/client-s3';
+import { SFNClient } from '@aws-sdk/client-sfn';
+import { SQSClient } from '@aws-sdk/client-sqs';
 
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { ConfigManager } from '../config/ConfigManager';
-import { AWSTestingFramework } from '../framework/AWSTestingFramework';
+import { HealthValidator } from '../framework/services/HealthValidator';
 
 interface DoctorOptions {
   verbose?: boolean;
@@ -25,7 +30,7 @@ interface CheckResult {
 
 class EnvironmentDoctor {
   private results: CheckResult[] = [];
-  private framework?: AWSTestingFramework;
+  private healthValidator: HealthValidator | undefined;
 
   async runAllChecks(_options: DoctorOptions): Promise<CheckResult[]> {
     console.log('🩺 AWS Testing Framework Environment Check');
@@ -106,8 +111,28 @@ class EnvironmentDoctor {
 
   private async checkAWSAccess(): Promise<void> {
     try {
-      this.framework = new AWSTestingFramework();
-      const healthStatus = await this.framework.getHealthStatus();
+      this.healthValidator = new HealthValidator(
+        new S3Client({ region: process.env.AWS_REGION }),
+        new SQSClient({ region: process.env.AWS_REGION }),
+        new LambdaClient({ region: process.env.AWS_REGION }),
+        new SFNClient({ region: process.env.AWS_REGION }),
+        new CloudWatchLogsClient({ region: process.env.AWS_REGION })
+      );
+      const healthStatus = await this.healthValidator.getHealthStatus(
+        {
+          totalTests: 0,
+          passedTests: 0,
+          failedTests: 0,
+          averageExecutionTime: 0,
+          totalExecutionTime: 0,
+          slowestOperation: null,
+          fastestOperation: null,
+          errorRate: 0,
+          retryRate: 0,
+        },
+        {},
+        0
+      );
 
       if (healthStatus.isHealthy) {
         this.addResult({
@@ -125,7 +150,7 @@ class EnvironmentDoctor {
       }
 
       // Check individual AWS setup
-      const awsSetup = await this.framework.validateAWSSetup();
+      const awsSetup = await this.healthValidator.validateAWSSetup();
       if (awsSetup.errors.length > 0) {
         this.addResult({
           name: 'AWS Setup Validation',

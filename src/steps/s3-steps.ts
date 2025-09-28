@@ -44,7 +44,7 @@ Then(
         'Bucket name is not set. Make sure to create a bucket first.'
       );
     }
-    await framework.waitForCondition(async () => {
+    await framework.healthValidator.waitForCondition(async () => {
       if (!this.bucketName) return false;
       const exists = await framework.s3Service.checkFileExists(
         this.bucketName,

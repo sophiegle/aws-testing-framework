@@ -10,7 +10,7 @@ Then(
   'the Lambda function {string} should be accessible',
   async function (this: StepContext, functionName: string) {
     try {
-      await framework.findFunction(functionName);
+      await framework.lambdaService.findFunction(functionName);
     } catch (error) {
       throw new Error(
         `Lambda function ${functionName} is not accessible: ${error instanceof Error ? error.message : String(error)}`
@@ -24,7 +24,7 @@ Then(
   async function (this: StepContext, stateMachineName: string) {
     try {
       const stateMachineArn =
-        await framework.findStateMachine(stateMachineName);
+        await framework.stepFunctionService.findStateMachine(stateMachineName);
       if (!stateMachineArn) {
         throw new Error(`State machine ${stateMachineName} not found`);
       }
@@ -53,7 +53,7 @@ Then(
   'the SQS queue {string} should be accessible',
   async function (this: StepContext, queueName: string) {
     try {
-      const queueUrl = await framework.findQueue(queueName);
+      const queueUrl = await framework.sqsService.findQueue(queueName);
       if (!queueUrl) {
         throw new Error(`Queue ${queueName} not found`);
       }
@@ -65,18 +65,10 @@ Then(
   }
 );
 
-Then('the AWS setup should be valid', async function (this: StepContext) {
-  const healthStatus = await framework.getHealthStatus();
-  if (!healthStatus.isHealthy) {
-    const errors = healthStatus.awsSetup.errors.join(', ');
-    throw new Error(`AWS setup is not valid: ${errors}`);
-  }
-});
-
 Then(
   'the framework should have good performance metrics',
   async function (this: StepContext) {
-    const metrics = framework.getTestMetrics();
+    const metrics = framework.performanceMonitor.getTestMetrics();
     if (metrics.errorRate > 10) {
       throw new Error(
         `Error rate is too high: ${metrics.errorRate.toFixed(2)}%`
