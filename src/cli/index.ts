@@ -8,6 +8,7 @@ import { configureCLI } from './configure';
 import { doctorCLI } from './doctor';
 import { generateDashboardCLI } from './generate-dashboard';
 import { initCLI } from './init';
+import { StepDiscoveryCommand } from './steps-discovery';
 
 interface CLIOptions {
   command?: string;
@@ -57,6 +58,8 @@ Commands:
   configure              Configure framework settings
   generate-dashboard     Generate test dashboard from results
   doctor                 Check environment and diagnose issues
+  steps                  Discover available Gherkin step definitions
+  generate-feature       Generate feature file with example steps
   
 Global Options:
   -h, --help             Show help for command
@@ -72,9 +75,13 @@ Examples:
   # Generate dashboard
   aws-testing-framework generate-dashboard
 
+  # Discover available steps
+  aws-testing-framework steps
+
 Get help for specific commands:
   aws-testing-framework init --help
   aws-testing-framework configure --help
+  aws-testing-framework steps --help
   aws-testing-framework generate-dashboard --help
   aws-testing-framework doctor --help
 
@@ -120,6 +127,30 @@ async function main(): Promise<void> {
         process.argv = ['node', 'doctor', ...(options.args || [])];
         await doctorCLI();
         break;
+
+      case 'steps': {
+        const discovery = new StepDiscoveryCommand();
+
+        // Parse steps command arguments
+        const stepsArgs = options.args || [];
+        const searchIndex = stepsArgs.indexOf('--search');
+        const serviceIndex = stepsArgs.indexOf('--service');
+        const detailIndex = stepsArgs.indexOf('--detail');
+        const exportIndex = stepsArgs.indexOf('--export');
+
+        if (searchIndex !== -1 && stepsArgs[searchIndex + 1]) {
+          await discovery.searchSteps(stepsArgs[searchIndex + 1]);
+        } else if (serviceIndex !== -1 && stepsArgs[serviceIndex + 1]) {
+          await discovery.filterByService(stepsArgs[serviceIndex + 1]);
+        } else if (detailIndex !== -1 && stepsArgs[detailIndex + 1]) {
+          await discovery.getStepDetail(stepsArgs[detailIndex + 1]);
+        } else if (exportIndex !== -1 && stepsArgs[exportIndex + 1]) {
+          await discovery.exportSteps(stepsArgs[exportIndex + 1]);
+        } else {
+          await discovery.execute();
+        }
+        break;
+      }
 
       case 'help':
       case undefined:

@@ -77,11 +77,58 @@ module.exports = {
 };
 ```
 
-### 4. Run Your Tests
+### 4. Discover Available Steps
+
+```bash
+# List all available step definitions
+npx aws-testing-framework steps
+
+# Search for specific steps
+npx aws-testing-framework steps --search "lambda"
+
+# Generate a feature file with examples
+npx aws-testing-framework generate-feature
+```
+
+### 5. Run Your Tests
 
 ```bash
 npx cucumber-js
 ```
+
+## 🔍 Step Discovery
+
+Don't know what steps are available? Use our built-in step discovery tools:
+
+### CLI Commands
+
+```bash
+# List all available steps organized by service
+npx aws-testing-framework steps
+
+# Search for specific functionality
+npx aws-testing-framework steps --search "upload"
+npx aws-testing-framework steps --search "lambda"
+
+# Filter by AWS service
+npx aws-testing-framework steps --service s3
+npx aws-testing-framework steps --service lambda
+
+# Get detailed information about a specific step
+npx aws-testing-framework steps --detail "I have an S3 bucket"
+
+# Export steps documentation
+npx aws-testing-framework steps --export steps.md
+```
+
+### Available Step Categories
+
+- **🔧 S3 Steps**: File uploads, downloads, and bucket operations
+- **📨 SQS Steps**: Message sending, receiving, and queue management
+- **⚡ Lambda Steps**: Function invocation, execution tracking, and timeout configuration
+- **🔄 Step Function Steps**: Workflow execution, state verification, and SLA compliance
+- **🔗 Correlation Steps**: End-to-end data tracing across services
+- **📊 Monitoring Steps**: CloudWatch logs analysis and performance monitoring
 
 ## 📖 Example Project
 
