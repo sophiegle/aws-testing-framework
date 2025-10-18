@@ -2,19 +2,12 @@
   "name": "my-aws-project",
   "version": "1.0.0",
   "scripts": {
-    "test": "cucumber-js",
-    "test:dashboard": "npm test && aws-testing-framework generate-dashboard"
+    "test": "cucumber-js"
   },
   "devDependencies": {
     "aws-testing-framework": "^0.3.0"
   },
   "awsTestingFramework": {
-    "dashboard": {
-      "enabled": true,
-      "outputDir": "./test-reports",
-      "themes": ["light"],
-      "autoGenerate": true
-    },
     "reporting": {
       "cucumberJsonPath": "./reports/cucumber-report.json"
     },

@@ -1,26 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { DashboardConfig } from '../reporting/TestDashboard';
 
 export interface AWSTestingFrameworkConfig {
-  /** Dashboard generation settings */
-  dashboard?: {
-    /** Enable automatic dashboard generation */
-    enabled?: boolean;
-    /** Output directory for dashboards */
-    outputDir?: string;
-    /** Dashboard themes to generate */
-    themes?: Array<'light' | 'dark'>;
-    /** Light theme configuration */
-    lightTheme?: Partial<DashboardConfig>;
-    /** Dark theme configuration */
-    darkTheme?: Partial<DashboardConfig>;
-    /** Auto-open dashboard in browser (development only) */
-    autoOpen?: boolean;
-    /** Generate dashboard after each test run */
-    autoGenerate?: boolean;
-  };
-
   /** Test execution settings */
   testing?: {
     /** Default timeout for AWS operations */
@@ -213,23 +194,6 @@ export class ConfigManager {
    */
   private getDefaultConfig(): AWSTestingFrameworkConfig {
     return {
-      dashboard: {
-        enabled: true,
-        outputDir: './test-reports',
-        themes: ['light', 'dark'],
-        autoGenerate: true,
-        autoOpen: process.env.NODE_ENV === 'development',
-        lightTheme: {
-          showPerformanceMetrics: true,
-          showStepDetails: true,
-          maxFeaturesToShow: 50,
-        },
-        darkTheme: {
-          showPerformanceMetrics: true,
-          showStepDetails: true,
-          maxFeaturesToShow: 50,
-        },
-      },
       testing: {
         defaultTimeout: 30000,
         retryAttempts: 3,
@@ -275,22 +239,6 @@ export class ConfigManager {
   }
 
   /**
-   * Get dashboard configuration
-   */
-  public getDashboardConfig(): NonNullable<
-    AWSTestingFrameworkConfig['dashboard']
-  > {
-    const config = this.getConfig();
-    const defaultConfig = this.getDefaultConfig();
-    return (
-      config.dashboard ||
-      (defaultConfig.dashboard as NonNullable<
-        AWSTestingFrameworkConfig['dashboard']
-      >)
-    );
-  }
-
-  /**
    * Get reporting configuration
    */
   public getReportingConfig(): NonNullable<
@@ -316,14 +264,6 @@ export class ConfigManager {
       config.ci ||
       (defaultConfig.ci as NonNullable<AWSTestingFrameworkConfig['ci']>)
     );
-  }
-
-  /**
-   * Check if dashboard generation is enabled
-   */
-  public isDashboardEnabled(): boolean {
-    const dashboardConfig = this.getDashboardConfig();
-    return dashboardConfig.enabled !== false;
   }
 
   /**

@@ -1,22 +1,4 @@
 module.exports = {
-  dashboard: {
-    enabled: true,
-    outputDir: './ci-reports',
-    themes: ['light', 'dark'],
-    autoGenerate: true,
-    autoOpen: false, // Never auto-open in CI
-    lightTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: false, // Reduce verbosity for CI
-      maxFeaturesToShow: 200,
-    },
-    darkTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: false,
-      maxFeaturesToShow: 200,
-    },
-  },
-
   reporting: {
     baseDir: './ci-reports',
     cucumberJsonPath: './coverage/functional-tests/cucumber-report.json',

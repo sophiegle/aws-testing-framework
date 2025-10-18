@@ -1,6 +1,6 @@
 # AWS Testing Framework Configuration
 
-The AWS Testing Framework supports automatic configuration detection to make dashboard generation and testing setup effortless for users.
+The AWS Testing Framework supports automatic configuration detection to make testing setup effortless for users.
 
 ## Quick Start
 
@@ -8,22 +8,7 @@ The AWS Testing Framework supports automatic configuration detection to make das
 
 ```json
 // aws-testing-framework.config.json
-{
-  "dashboard": {
-    "enabled": true,
-    "autoGenerate": true
-  }
-}
-```
-
-2. **Generate dashboard automatically**:
-
-```bash
-# Simple command - auto-detects everything
-npx aws-testing-framework generate-dashboard
-
-# Or use the short alias
-npx awstf generate-dashboard
+{}
 ```
 
 3. **Integrate with your test pipeline**:
@@ -32,8 +17,7 @@ npx awstf generate-dashboard
 // package.json
 {
   "scripts": {
-    "test": "cucumber-js",
-    "test:dashboard": "npm test && awstf generate-dashboard"
+    "test": "cucumber-js"
   }
 }
 ```
@@ -57,11 +41,6 @@ Simple setup for most projects:
 
 ```json
 {
-  "dashboard": {
-    "enabled": true,
-    "outputDir": "./test-reports",
-    "autoGenerate": true
-  },
   "reporting": {
     "cucumberJsonPath": "./reports/cucumber-report.json"
   }
@@ -74,16 +53,6 @@ Optimized for local development:
 ```javascript
 // development-config.js
 module.exports = {
-  dashboard: {
-    enabled: true,
-    autoGenerate: true,
-    autoOpen: true, // Auto-open in browser
-    themes: ['light'], // Faster generation
-    lightTheme: {
-      autoRefresh: true,
-      refreshInterval: 3000
-    }
-  },
   testing: {
     verbose: true,
     defaultTimeout: 60000 // Longer timeout for debugging
@@ -97,12 +66,6 @@ Production-ready setup for continuous integration:
 ```javascript
 // ci-config.js
 module.exports = {
-  dashboard: {
-    enabled: true,
-    autoGenerate: true,
-    autoOpen: false,
-    themes: ['light', 'dark']
-  },
   ci: {
     environment: process.env.NODE_ENV,
     buildId: process.env.BUILD_ID,
@@ -132,14 +95,8 @@ Embed configuration directly in package.json:
 ```json
 {
   "name": "my-project",
-  "scripts": {
-    "test:dashboard": "npm test && awstf generate-dashboard"
-  },
+  "scripts": {},
   "awsTestingFramework": {
-    "dashboard": {
-      "enabled": true,
-      "autoGenerate": true
-    },
     "aws": {
       "region": "us-west-2"
     }
@@ -148,18 +105,6 @@ Embed configuration directly in package.json:
 ```
 
 ## Configuration Options
-
-### Dashboard Settings
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | `true` | Enable dashboard generation |
-| `outputDir` | string | `./test-reports` | Output directory for dashboards |
-| `themes` | string[] | `['light', 'dark']` | Themes to generate |
-| `autoGenerate` | boolean | `true` | Auto-generate after tests |
-| `autoOpen` | boolean | `false` | Auto-open in browser (dev only) |
-| `lightTheme` | object | | Light theme configuration |
-| `darkTheme` | object | | Dark theme configuration |
 
 ### Testing Settings
 
@@ -215,40 +160,11 @@ The framework automatically reads common environment variables:
 ## Programmatic Usage
 
 ```typescript
-import { generateSmartDashboard, ConfigManager } from 'aws-testing-framework';
-
-// Auto-detect and use configuration
-const result = generateSmartDashboard();
-
-if (result.success) {
-  console.log('Dashboard generated:', result.paths);
-} else {
-  console.error('Error:', result.message);
-}
-
+import { ConfigManager } from 'aws-testing-framework';
 // Get configuration details
 const configManager = ConfigManager.getInstance();
 const config = configManager.autoDetectConfig();
 console.log('Using config:', config);
-```
-
-## CLI Usage
-
-```bash
-# Auto-detect configuration and generate dashboard
-npx awstf generate-dashboard
-
-# Use specific configuration file
-npx awstf generate-dashboard --config ./my-config.js
-
-# Generate only light theme
-npx awstf generate-dashboard --theme light
-
-# Verbose output
-npx awstf generate-dashboard --verbose
-
-# Custom input and output
-npx awstf generate-dashboard --input ./reports/test.json --output ./dashboards
 ```
 
 ## Integration Examples
@@ -256,7 +172,7 @@ npx awstf generate-dashboard --input ./reports/test.json --output ./dashboards
 ### GitHub Actions
 
 ```yaml
-name: Test and Dashboard
+name: Test
 on: [push, pull_request]
 
 jobs:
@@ -270,7 +186,6 @@ jobs:
       
       - run: npm install
       - run: npm test
-      - run: npx awstf generate-dashboard --verbose
         env:
           S3_REPORTS_BUCKET: ${{ secrets.S3_REPORTS_BUCKET }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -287,11 +202,8 @@ jobs:
 {
   "scripts": {
     "test": "cucumber-js",
-    "test:dev": "NODE_ENV=development npm test && awstf generate-dashboard",
-    "test:ci": "npm test && awstf generate-dashboard --theme both",
-    "dashboard": "awstf generate-dashboard",
-    "dashboard:light": "awstf generate-dashboard --theme light",
-    "dashboard:verbose": "awstf generate-dashboard --verbose"
+    "test:dev": "NODE_ENV=development npm test",
+    "test:ci": "npm test",
   }
 }
 ```
@@ -306,10 +218,6 @@ jobs:
 
 ## Troubleshooting
 
-### Dashboard not generating
-- Check if `dashboard.enabled` is `true`
-- Verify the Cucumber JSON report exists at the specified path
-- Run with `--verbose` flag to see detailed output
 
 ### Configuration not found
 - Ensure the config file is in your project root or parent directories
@@ -318,5 +226,5 @@ jobs:
 
 ### CLI command not found
 - Install the package globally: `npm install -g aws-testing-framework`
-- Or use npx: `npx aws-testing-framework generate-dashboard`
+- Or use npx: `npx aws-testing-framework <command>`
 - Check that the package is installed in your project

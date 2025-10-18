@@ -1,26 +1,5 @@
 // Enterprise configuration with advanced features
 module.exports = {
-  dashboard: {
-    enabled: true,
-    outputDir: './enterprise-reports',
-    themes: ['light', 'dark'],
-    autoGenerate: true,
-    autoOpen: false,
-
-    lightTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: true,
-      maxFeaturesToShow: 500, // Large enterprise test suites
-      autoRefresh: false,
-    },
-
-    darkTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: true,
-      maxFeaturesToShow: 500,
-    },
-  },
-
   reporting: {
     baseDir: './enterprise-reports',
     cucumberJsonPath: './test-results/cucumber-report.json',

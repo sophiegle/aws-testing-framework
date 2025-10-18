@@ -33,7 +33,6 @@
   "scripts": {
     "build": "tsc",
     "test": "cucumber-js",
-    "test:dashboard": "npm test && node scripts/generate-dashboard.js",
     "test:coverage": "cucumber-js && npm run generate-report",
     "test:watch": "cucumber-js --watch",
     "version": "npm run build",

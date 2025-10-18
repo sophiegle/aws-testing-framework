@@ -26,112 +26,11 @@ class ConfigurationWizard {
     console.log('🔧 AWS Testing Framework Configuration Wizard');
     console.log('================================================\n');
 
-    await this.configureBasicSettings();
-    await this.configureDashboard();
     await this.configureTesting();
     await this.configureAWS();
     await this.configureCI();
 
     return this.config;
-  }
-
-  private async configureBasicSettings(): Promise<void> {
-    console.log('📋 Basic Settings');
-    console.log('----------------\n');
-
-    const basicAnswers = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'enableDashboard',
-        message: 'Enable dashboard generation?',
-        default: true,
-      },
-      {
-        type: 'confirm',
-        name: 'autoGenerate',
-        message: 'Auto-generate dashboard after tests?',
-        default: true,
-        when: (answers) => answers.enableDashboard,
-      },
-    ]);
-
-    this.config.dashboard = {
-      enabled: basicAnswers.enableDashboard,
-      autoGenerate: basicAnswers.autoGenerate || false,
-    };
-
-    console.log();
-  }
-
-  private async configureDashboard(): Promise<void> {
-    if (!this.config.dashboard?.enabled) return;
-
-    console.log('📊 Dashboard Configuration');
-    console.log('-------------------------\n');
-
-    const dashboardAnswers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'outputDir',
-        message: 'Dashboard output directory:',
-        default: './test-reports',
-      },
-      {
-        type: 'checkbox',
-        name: 'themes',
-        message: 'Select dashboard themes:',
-        choices: [
-          { name: 'Light theme', value: 'light', checked: true },
-          { name: 'Dark theme', value: 'dark', checked: true },
-        ],
-        validate: (input) =>
-          input.length > 0 || 'Please select at least one theme',
-      },
-      {
-        type: 'confirm',
-        name: 'autoOpen',
-        message: 'Auto-open dashboard in browser (development only)?',
-        default: false,
-      },
-      {
-        type: 'confirm',
-        name: 'showPerformanceMetrics',
-        message: 'Include performance metrics in dashboard?',
-        default: true,
-      },
-      {
-        type: 'confirm',
-        name: 'showStepDetails',
-        message: 'Include step details in dashboard?',
-        default: true,
-      },
-      {
-        type: 'number',
-        name: 'maxFeaturesToShow',
-        message: 'Maximum number of features to show in dashboard:',
-        default: 50,
-        validate: (input) => input > 0 || 'Please enter a positive number',
-      },
-    ]);
-
-    this.config.dashboard = {
-      ...this.config.dashboard,
-      outputDir: dashboardAnswers.outputDir,
-      themes: dashboardAnswers.themes,
-      autoOpen: dashboardAnswers.autoOpen,
-      lightTheme: {
-        showPerformanceMetrics: dashboardAnswers.showPerformanceMetrics,
-        showStepDetails: dashboardAnswers.showStepDetails,
-        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow,
-      },
-      darkTheme: {
-        showPerformanceMetrics: dashboardAnswers.showPerformanceMetrics,
-        showStepDetails: dashboardAnswers.showStepDetails,
-        maxFeaturesToShow: dashboardAnswers.maxFeaturesToShow,
-      },
-    };
-
-    console.log();
   }
 
   private async configureTesting(): Promise<void> {
@@ -341,11 +240,6 @@ class ConfigurationWizard {
     // Development-specific config
     const devConfig = {
       ...this.config,
-      dashboard: {
-        ...this.config.dashboard,
-        autoOpen: true,
-        themes: ['light'],
-      },
       testing: {
         ...this.config.testing,
         verbose: true,
@@ -357,10 +251,6 @@ class ConfigurationWizard {
     // CI-specific config
     const ciConfig = {
       ...this.config,
-      dashboard: {
-        ...this.config.dashboard,
-        autoOpen: false,
-      },
       testing: {
         ...this.config.testing,
         verbose: false,
@@ -503,7 +393,6 @@ async function main(): Promise<void> {
     console.log('\n📋 Next Steps:');
     console.log('1. Review the generated configuration files');
     console.log('2. Customize settings for your specific needs');
-    console.log('3. Run: npx aws-testing-framework generate-dashboard');
     console.log('\n💡 Tips:');
     console.log('• Use development.config.json for local development');
     console.log('• Use ci.config.json for CI/CD pipelines');

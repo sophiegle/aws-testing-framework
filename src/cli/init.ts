@@ -58,11 +58,6 @@ const templates: Record<string, ProjectTemplate> = {
 };`,
 
       'aws-testing-framework.config.json': `{
-  "dashboard": {
-    "enabled": true,
-    "autoGenerate": true,
-    "themes": ["light", "dark"]
-  },
   "aws": {
     "region": "us-east-1"
   },
@@ -120,12 +115,6 @@ This project uses the AWS Testing Framework for end-to-end testing of AWS servic
 \`\`\`bash
 # Run tests
 npm test
-
-# Run tests with dashboard
-npm run test:dashboard
-
-# Generate dashboard only
-npm run dashboard
 \`\`\`
 
 ## Writing Tests
@@ -145,7 +134,6 @@ Feature: My AWS Service
 
 Edit \`aws-testing-framework.config.json\` to customize:
 - AWS region and services
-- Dashboard settings
 - Test timeouts and retries
 - Reporting options
 
@@ -162,8 +150,6 @@ https://github.com/sophiegle/aws-testing-framework/tree/main/examples/config
     ],
     scripts: {
       test: 'cucumber-js',
-      'test:dashboard': 'npm test && npx awstf generate-dashboard',
-      dashboard: 'npx awstf generate-dashboard',
       build: 'tsc --noEmit',
     },
   },
@@ -265,16 +251,6 @@ export class TestHelpers {
 }`,
 
       'aws-testing-framework.config.js': `module.exports = {
-  dashboard: {
-    enabled: true,
-    autoGenerate: true,
-    themes: ['light', 'dark'],
-    lightTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: true,
-      maxFeaturesToShow: 100
-    }
-  },
   aws: {
     region: process.env.AWS_REGION || 'us-east-1',
     maxRetries: 5
@@ -300,11 +276,8 @@ export class TestHelpers {
     ],
     scripts: {
       test: 'cucumber-js',
-      'test:dashboard': 'npm test && npx awstf generate-dashboard',
       'test:dev': 'NODE_ENV=development npm test',
       'test:watch': 'npm test -- --watch',
-      dashboard: 'npx awstf generate-dashboard',
-      'dashboard:dev': 'npx awstf generate-dashboard --theme light --verbose',
       build: 'tsc',
       clean: 'rm -rf test-reports coverage',
     },
@@ -367,10 +340,6 @@ jobs:
       env:
         NODE_ENV: ci
     
-    - name: Generate dashboard
-      run: npx awstf generate-dashboard
-      if: always()
-    
     - name: Upload test reports
       uses: actions/upload-artifact@v3
       with:
@@ -379,12 +348,6 @@ jobs:
       if: always()`,
 
       'aws-testing-framework.config.js': `module.exports = {
-  dashboard: {
-    enabled: true,
-    autoGenerate: true,
-    autoOpen: false,
-    themes: ['light', 'dark']
-  },
   aws: {
     region: process.env.AWS_REGION || 'us-east-1',
     maxRetries: 5
@@ -415,9 +378,8 @@ jobs:
     ],
     scripts: {
       test: 'cucumber-js',
-      'test:ci': 'NODE_ENV=ci npm test && npx awstf generate-dashboard',
+      'test:ci': 'NODE_ENV=ci npm test',
       'test:smoke': 'cucumber-js features/smoke-tests.feature',
-      dashboard: 'npx awstf generate-dashboard',
       doctor: 'npx awstf doctor',
     },
   },
@@ -461,23 +423,12 @@ jobs:
       stepFunctionExecutionTime: 120000,
       errorRate: 0.01
     }
-  },
-  dashboards: {
-    realTimeUpdates: true,
-    includeBusinessMetrics: true,
-    customCharts: ['throughput', 'latency', 'errorRates']
   }
 };`,
 
       'aws-testing-framework.config.js': `const monitoring = require('./config/monitoring');
 
 module.exports = {
-  dashboard: {
-    enabled: true,
-    autoGenerate: true,
-    themes: ['light', 'dark'],
-    ...monitoring.dashboards
-  },
   aws: {
     region: process.env.AWS_REGION || 'us-east-1',
     maxRetries: 10
@@ -518,8 +469,6 @@ module.exports = {
       'test:integration': 'cucumber-js features/integration/',
       'test:performance': 'cucumber-js features/performance/',
       'test:enterprise': 'npm run test:integration && npm run test:performance',
-      dashboard: 'npx awstf generate-dashboard',
-      'dashboard:enterprise': 'npx awstf generate-dashboard --verbose',
       doctor: 'npx awstf doctor --verbose',
       monitor: 'node lib/monitoring.js',
     },

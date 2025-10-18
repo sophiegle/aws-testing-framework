@@ -204,22 +204,6 @@ class EnvironmentDoctor {
             'Create aws-testing-framework.config.json for customization',
         });
       }
-
-      // Check dashboard config
-      if (configManager.isDashboardEnabled()) {
-        this.addResult({
-          name: 'Dashboard Configuration',
-          status: 'pass',
-          message: 'Dashboard generation enabled',
-        });
-      } else {
-        this.addResult({
-          name: 'Dashboard Configuration',
-          status: 'warn',
-          message: 'Dashboard generation disabled',
-          suggestion: 'Enable dashboard in configuration for better reporting',
-        });
-      }
     } catch (_error) {
       this.addResult({
         name: 'Configuration',

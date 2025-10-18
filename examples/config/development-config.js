@@ -1,19 +1,4 @@
 module.exports = {
-  dashboard: {
-    enabled: true,
-    outputDir: './dev-reports',
-    themes: ['light'], // Only light theme for faster generation
-    autoGenerate: true,
-    autoOpen: true, // Auto-open in browser for development
-    lightTheme: {
-      showPerformanceMetrics: true,
-      showStepDetails: true,
-      maxFeaturesToShow: 100, // Show more features in dev
-      autoRefresh: true, // Enable auto-refresh for development
-      refreshInterval: 3000,
-    },
-  },
-
   reporting: {
     baseDir: './dev-reports',
     cucumberJsonPath: './coverage/functional-tests/cucumber-report.json',

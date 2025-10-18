@@ -1,12 +1,5 @@
 {
   "$schema": "https://schemas.awstestingframework.dev/config.json",
-  "dashboard": {
-    "enabled": true,
-    "outputDir": "./test-reports",
-    "themes": ["light", "dark"],
-    "autoGenerate": true,
-    "autoOpen": false
-  },
   "reporting": {
     "baseDir": "./test-reports",
     "cucumberJsonPath": "./reports/cucumber-report.json",

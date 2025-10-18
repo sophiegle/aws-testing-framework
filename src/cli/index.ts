@@ -6,7 +6,6 @@
 
 import { configureCLI } from './configure';
 import { doctorCLI } from './doctor';
-import { generateDashboardCLI } from './generate-dashboard';
 import { initCLI } from './init';
 import { StepDiscoveryCommand } from './steps-discovery';
 
@@ -56,7 +55,6 @@ Usage: aws-testing-framework <command> [options]
 Commands:
   init                    Initialize a new AWS testing project
   configure              Configure framework settings
-  generate-dashboard     Generate test dashboard from results
   doctor                 Check environment and diagnose issues
   steps                  Discover available Gherkin step definitions
   generate-feature       Generate feature file with example steps
@@ -72,9 +70,6 @@ Examples:
   # Configure framework
   aws-testing-framework configure --interactive
 
-  # Generate dashboard
-  aws-testing-framework generate-dashboard
-
   # Discover available steps
   aws-testing-framework steps
 
@@ -82,7 +77,6 @@ Get help for specific commands:
   aws-testing-framework init --help
   aws-testing-framework configure --help
   aws-testing-framework steps --help
-  aws-testing-framework generate-dashboard --help
   aws-testing-framework doctor --help
 
 Documentation:
@@ -115,12 +109,6 @@ async function main(): Promise<void> {
       case 'configure':
         process.argv = ['node', 'configure', ...(options.args || [])];
         await configureCLI();
-        break;
-
-      case 'generate-dashboard':
-      case 'dashboard':
-        process.argv = ['node', 'generate-dashboard', ...(options.args || [])];
-        await generateDashboardCLI();
         break;
 
       case 'doctor':

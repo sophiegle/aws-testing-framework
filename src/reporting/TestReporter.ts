@@ -1,8 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { generateHtmlReport } from './generateReport';
-import type { DashboardConfig } from './TestDashboard';
-import { TestDashboard } from './TestDashboard';
 
 export interface TestFeature {
   name: string;
@@ -39,11 +37,6 @@ export interface TestReporterResults {
 export class TestReporter {
   private results: TestReporterResults[] = [];
   private currentFeature: TestReporterResults | null = null;
-  private dashboard: TestDashboard;
-
-  constructor(dashboardConfig?: Partial<DashboardConfig>) {
-    this.dashboard = new TestDashboard(dashboardConfig);
-  }
 
   onFeatureStarted(feature: TestFeature) {
     this.currentFeature = {
@@ -136,46 +129,6 @@ export class TestReporter {
     // Generate and write HTML report
     const htmlReport = generateHtmlReport(this.results);
     fs.writeFileSync(path.join(reportsDir, 'report.html'), htmlReport);
-
-    // Generate interactive dashboard
-    this.generateDashboard();
-  }
-
-  /**
-   * Generate interactive dashboard
-   */
-  private generateDashboard(): void {
-    if (this.results.length === 0) {
-      return;
-    }
-
-    try {
-      // Calculate metrics
-      const metrics = this.dashboard.calculateMetrics(this.results);
-
-      // Generate dashboard HTML
-      const dashboardHtml = this.dashboard.generateDashboard(
-        this.results,
-        metrics
-      );
-
-      // Save dashboard files
-      const reportsDir = 'test-reports';
-      fs.writeFileSync(path.join(reportsDir, 'dashboard.html'), dashboardHtml);
-
-      // Generate dark theme dashboard
-      const darkDashboard = new TestDashboard({ theme: 'dark' });
-      const darkDashboardHtml = darkDashboard.generateDashboard(
-        this.results,
-        metrics
-      );
-      fs.writeFileSync(
-        path.join(reportsDir, 'dashboard-dark.html'),
-        darkDashboardHtml
-      );
-    } catch (_error) {
-      // Error generating dashboard - silently fail
-    }
   }
 
   /**
@@ -183,21 +136,5 @@ export class TestReporter {
    */
   getResults(): TestReporterResults[] {
     return this.results;
-  }
-
-  /**
-   * Get dashboard metrics
-   */
-  getDashboardMetrics() {
-    return this.dashboard.calculateMetrics(this.results);
-  }
-
-  /**
-   * Generate dashboard with custom configuration
-   */
-  generateCustomDashboard(config?: Partial<DashboardConfig>): string {
-    const customDashboard = new TestDashboard(config);
-    const metrics = customDashboard.calculateMetrics(this.results);
-    return customDashboard.generateDashboard(this.results, metrics);
   }
 }
