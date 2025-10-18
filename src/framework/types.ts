@@ -1,3 +1,6 @@
+// Import needed for proper typing (will be resolved at runtime)
+import type { IServiceContainer } from './container/ServiceContainer';
+
 export interface AWSConfig {
   region?: string;
   credentials?: {
@@ -40,6 +43,8 @@ export interface StepContext {
   lastError?: Error;
   loggingEnabled?: boolean;
   customConfiguration?: boolean;
+  // Container reference for dependency injection
+  container?: IServiceContainer;
 }
 
 export interface ExecutionDetails {
