@@ -119,7 +119,7 @@ Embed configuration directly in package.json:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `region` | string | `us-east-1` | Default AWS region |
+| `region` | string | `eu-west-2` | Default AWS region |
 | `maxRetries` | number | `3` | Maximum retry attempts for AWS SDK |
 | `timeout` | number | `10000` | Request timeout in milliseconds |
 

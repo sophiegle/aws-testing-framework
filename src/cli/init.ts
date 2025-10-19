@@ -59,7 +59,7 @@ const templates: Record<string, ProjectTemplate> = {
 
       'aws-testing-framework.config.json': `{
   "aws": {
-    "region": "us-east-1"
+    "region": "eu-west-2"
   },
   "testing": {
     "defaultTimeout": 30000,
@@ -252,7 +252,7 @@ export class TestHelpers {
 
       'aws-testing-framework.config.js': `module.exports = {
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.AWS_REGION || 'eu-west-2',
     maxRetries: 5
   },
   testing: {
@@ -333,7 +333,7 @@ jobs:
       with:
         aws-access-key-id: \${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: \${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: eu-west-2
     
     - name: Run tests
       run: npm test
@@ -349,7 +349,7 @@ jobs:
 
       'aws-testing-framework.config.js': `module.exports = {
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.AWS_REGION || 'eu-west-2',
     maxRetries: 5
   },
   testing: {
@@ -430,7 +430,7 @@ jobs:
 
 module.exports = {
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.AWS_REGION || 'eu-west-2',
     maxRetries: 10
   },
   testing: {
@@ -523,7 +523,7 @@ Usage: aws-testing-framework init [options]
 Options:
   -n, --name <name>       Project name
   -t, --template <type>   Project template (basic|comprehensive|ci|enterprise)
-  -r, --region <region>   AWS region (default: us-east-1)
+  -r, --region <region>   AWS region (default: eu-west-2)
   --ts, --typescript      Use TypeScript (default: true)
   -i, --interactive       Interactive mode
   -h, --help              Show this help message
@@ -597,7 +597,7 @@ async function createProject(options: InitOptions): Promise<void> {
         type: 'input',
         name: 'awsRegion',
         message: 'AWS Region:',
-        default: options.aws?.region || process.env.AWS_REGION || 'us-east-1',
+        default: options.aws?.region || process.env.AWS_REGION || 'eu-west-2',
       },
       {
         type: 'checkbox',
@@ -640,7 +640,7 @@ async function createProject(options: InitOptions): Promise<void> {
   console.log(`🚀 Creating AWS Testing Framework project: ${projectName}`);
   console.log(`📋 Template: ${template.name}`);
   console.log(`📁 Directory: ${projectDir}`);
-  console.log(`☁️  AWS Region: ${options.aws?.region || 'us-east-1'}`);
+  console.log(`☁️  AWS Region: ${options.aws?.region || 'eu-west-2'}`);
   console.log(
     `🛠️  Services: ${options.aws?.services?.join(', ') || 'S3, Lambda, SQS'}\n`
   );

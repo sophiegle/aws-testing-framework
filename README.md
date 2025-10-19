@@ -149,7 +149,7 @@ npm run test:all
 import { AWSTestingFramework } from 'aws-testing-framework';
 
 // Development environment
-const framework = AWSTestingFramework.createForDevelopment('us-east-1');
+const framework = AWSTestingFramework.createForDevelopment('eu-west-2');
 
 // Production environment
 const framework = AWSTestingFramework.createForProduction('us-west-2');
@@ -168,7 +168,7 @@ const framework = AWSTestingFramework.create({
 
 ```bash
 # AWS Configuration
-AWS_REGION=us-east-1
+AWS_REGION=eu-west-2
 AWS_PROFILE=my-profile
 
 # Framework Configuration

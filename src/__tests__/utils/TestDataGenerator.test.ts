@@ -413,7 +413,7 @@ describe('TestDataGenerator', () => {
       expect(parsed.Records).toHaveLength(1);
       expect(parsed.Records[0].eventVersion).toBe('2.1');
       expect(parsed.Records[0].eventSource).toBe('aws:s3');
-      expect(parsed.Records[0].awsRegion).toBe('us-east-1');
+      expect(parsed.Records[0].awsRegion).toBe('eu-west-2');
       expect(parsed.Records[0].eventTime).toBe(mockDate.toISOString());
       expect(parsed.Records[0].eventName).toBe('ObjectCreated:Put');
       expect(parsed.Records[0].s3.object.size).toBe(1024);

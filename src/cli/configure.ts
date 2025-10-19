@@ -75,7 +75,7 @@ class ConfigurationWizard {
     console.log('☁️  AWS Configuration');
     console.log('--------------------\n');
 
-    const detectedRegion = process.env.AWS_REGION || 'us-east-1';
+    const detectedRegion = process.env.AWS_REGION || 'eu-west-2';
 
     const awsAnswers = await inquirer.prompt([
       {
@@ -83,7 +83,7 @@ class ConfigurationWizard {
         name: 'region',
         message: 'AWS Region:',
         choices: [
-          'us-east-1',
+          'eu-west-2',
           'us-east-2',
           'us-west-1',
           'us-west-2',
@@ -209,7 +209,7 @@ class ConfigurationWizard {
       this.config.ci.uploadToS3 = {
         bucket: ciAnswers.s3Bucket,
         prefix: ciAnswers.s3Prefix,
-        region: this.config.aws?.region || 'us-east-1',
+        region: this.config.aws?.region || 'eu-west-2',
       };
     }
 
@@ -340,7 +340,7 @@ async function detectCurrentSetup(): Promise<void> {
   if (process.env.AWS_REGION) {
     console.log(`✅ AWS Region detected: ${process.env.AWS_REGION}`);
   } else {
-    console.log('⚠️  AWS_REGION not set - using default: us-east-1');
+    console.log('⚠️  AWS_REGION not set - using default: eu-west-2');
   }
 
   if (process.env.AWS_PROFILE) {

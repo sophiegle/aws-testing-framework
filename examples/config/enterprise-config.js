@@ -16,7 +16,7 @@ module.exports = {
   },
 
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.AWS_REGION || 'eu-west-2',
     maxRetries: 10, // High retry count for enterprise reliability
     timeout: 30000,
   },
@@ -35,7 +35,7 @@ module.exports = {
       bucket:
         process.env.ENTERPRISE_REPORTS_BUCKET || 'enterprise-test-reports',
       prefix: `reports/${process.env.ENVIRONMENT}/${new Date().toISOString().split('T')[0]}`,
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: process.env.AWS_REGION || 'eu-west-2',
     },
 
     // Multi-channel notifications

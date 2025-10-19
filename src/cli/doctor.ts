@@ -106,7 +106,7 @@ class EnvironmentDoctor {
       this.addResult({
         name: 'AWS Region',
         status: 'warn',
-        message: 'AWS_REGION not set, using default: us-east-1',
+        message: 'AWS_REGION not set, using default: eu-west-2',
         suggestion: 'Set AWS_REGION environment variable',
       });
     }

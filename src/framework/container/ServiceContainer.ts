@@ -79,7 +79,7 @@ export class ServiceContainer implements IServiceContainer {
     // Initialize AWS clients with proper configuration
     const awsConfig = this.config.aws || {};
     const clientConfig = {
-      region: awsConfig.region || process.env.AWS_REGION || 'us-east-1',
+      region: awsConfig.region || process.env.AWS_REGION || 'eu-west-2',
       maxAttempts: awsConfig.maxRetries || 3,
       requestHandler: awsConfig.timeout
         ? { requestTimeout: awsConfig.timeout }
@@ -197,7 +197,7 @@ export class ServiceContainer implements IServiceContainer {
       logLevel: 'debug', // Verbose logging for development
       testDataDir: './test-data',
       aws: {
-        region: region || process.env.AWS_REGION || 'us-east-1',
+        region: region || process.env.AWS_REGION || 'eu-west-2',
         maxRetries: 5,
         timeout: 30000,
       },
@@ -218,7 +218,7 @@ export class ServiceContainer implements IServiceContainer {
       logLevel: 'info',
       testDataDir: './test-data',
       aws: {
-        region: region || process.env.AWS_REGION || 'us-east-1',
+        region: region || process.env.AWS_REGION || 'eu-west-2',
         maxRetries: 3,
         timeout: 10000,
       },

@@ -15,7 +15,7 @@ module.exports = {
   },
 
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    region: process.env.AWS_REGION || 'eu-west-2',
     maxRetries: 5, // More retries in CI for reliability
     timeout: 20000,
   },
@@ -34,7 +34,7 @@ module.exports = {
       ? {
           bucket: process.env.S3_REPORTS_BUCKET,
           prefix: `test-reports/${process.env.BRANCH_NAME || 'main'}`,
-          region: process.env.AWS_REGION || 'us-east-1',
+          region: process.env.AWS_REGION || 'eu-west-2',
         }
       : undefined,
 
