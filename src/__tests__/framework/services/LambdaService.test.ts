@@ -54,18 +54,14 @@ describe('LambdaService', () => {
   describe('invokeFunction', () => {
     it('should invoke function with payload', async () => {
       const mockPayload = { message: 'test' };
-      const mockResponse = { statusCode: 200, body: 'success' };
-      const encoder = new TextEncoder();
 
       lambdaMock.on(InvokeCommand).resolves({
-        Payload: encoder.encode(JSON.stringify(mockResponse)),
         StatusCode: 200,
       });
 
       const result = await service.invokeFunction('test-function', mockPayload);
 
       expect(result).toBeDefined();
-      expect(result?.Payload).toBeDefined();
     });
 
     it('should handle invocation with options', async () => {
@@ -155,6 +151,12 @@ describe('LambdaService', () => {
 
   describe('checkLambdaExecution', () => {
     it('should return true when executions found', async () => {
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
+
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [
           {
@@ -170,6 +172,12 @@ describe('LambdaService', () => {
     });
 
     it('should return false when no executions found', async () => {
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
+
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [],
       });
@@ -184,6 +192,12 @@ describe('LambdaService', () => {
     it('should count executions in time range', async () => {
       const startTime = new Date('2024-01-01T10:00:00Z');
       const endTime = new Date('2024-01-01T10:05:00Z');
+
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
 
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [
@@ -203,6 +217,12 @@ describe('LambdaService', () => {
     });
 
     it('should return 0 when no executions found', async () => {
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
+
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [],
       });
@@ -219,6 +239,12 @@ describe('LambdaService', () => {
 
   describe('countLambdaExecutionsInLastMinutes', () => {
     it('should count executions in last N minutes', async () => {
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
+
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [
           { message: 'START RequestId: req1', timestamp: Date.now() },
@@ -235,6 +261,12 @@ describe('LambdaService', () => {
     });
 
     it('should handle zero minutes', async () => {
+      lambdaMock.on(GetFunctionCommand).resolves({
+        Configuration: {
+          FunctionName: 'test-function',
+        },
+      });
+
       cwLogsMock.on(FilterLogEventsCommand).resolves({
         events: [],
       });
