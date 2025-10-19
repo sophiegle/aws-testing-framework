@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-10-19
+
+### 📚 Documentation
+
+#### Added
+- **GETTING_STARTED.md** - Comprehensive onboarding guide for new users
+  - Complete setup walkthrough (15 minutes to first test)
+  - CloudFormation template for AWS infrastructure
+  - Troubleshooting guide with common issues
+  - Learning path from beginner to expert (4 levels)
+  - Real-world usage examples and best practices
+
+#### Changed
+- Simplified Quick Start section in README
+- Added prominent link to Getting Started guide
+- Updated documentation links and resources
+- Improved first-run experience documentation
+
+### 🐛 Fixed
+- Auto-initialization of step definitions for Cucumber
+- Step definitions now properly registered when module loads
+
+---
+
 ## [0.6.0] - 2025-10-19
 
 ### 🎉 Major Improvements
