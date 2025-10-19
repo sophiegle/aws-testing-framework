@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { IServiceContainer } from '../../../framework/container/ServiceContainer';
+import type { HealthValidator } from '../../../framework/services/HealthValidator';
+import type { LambdaService } from '../../../framework/services/LambdaService';
+import type { S3Service } from '../../../framework/services/S3Service';
 import type { FrameworkConfig, StepContext } from '../../../framework/types';
 
 // Mock Cucumber before importing LambdaSteps
@@ -15,27 +18,41 @@ jest.mock('@cucumber/cucumber', () => ({
 
 import { LambdaSteps } from '../../../framework/steps/LambdaSteps';
 
+type StepCallback = (
+  this: StepContext,
+  ...args: (string | number)[]
+) => Promise<void> | void;
+
 describe('LambdaSteps', () => {
   let lambdaSteps: LambdaSteps;
   let mockContainer: IServiceContainer;
   let mockContext: StepContext;
-  let registeredSteps: Map<string, Function>;
+  let registeredSteps: Map<string, StepCallback>;
 
-  // Mock services (using any to avoid jest.fn() type inference issues)
-  const mockLambdaService: any = {
+  // Properly typed mock services
+  const mockLambdaService = {
     findFunction: jest.fn(),
     invokeFunction: jest.fn(),
     checkLambdaExecution: jest.fn(),
     countLambdaExecutionsInLastMinutes: jest.fn(),
     getLambdaLogs: jest.fn(),
-  };
+  } as unknown as jest.Mocked<LambdaService>;
 
-  const mockS3Service: any = {
+  const mockS3Service = {
     uploadFile: jest.fn(),
-  };
+  } as unknown as jest.Mocked<S3Service>;
 
-  const mockHealthValidator: any = {
+  const mockHealthValidator = {
     waitForCondition: jest.fn(),
+  } as unknown as jest.Mocked<HealthValidator>;
+
+  // Helper to safely get registered steps
+  const getStep = (pattern: string): StepCallback => {
+    const step = registeredSteps.get(pattern);
+    if (!step) {
+      throw new Error(`Step not found: ${pattern}`);
+    }
+    return step;
   };
 
   beforeEach(() => {
@@ -47,26 +64,35 @@ describe('LambdaSteps', () => {
     mockThen.mockClear();
 
     // Capture registered steps
-    const captureStep = (pattern: string | RegExp, callback: Function) => {
+    const captureStep = (
+      pattern: string | RegExp,
+      callback: StepCallback
+    ): void => {
       const key = typeof pattern === 'string' ? pattern : pattern.toString();
       registeredSteps.set(key, callback);
     };
 
-    mockGiven.mockImplementation(captureStep as any);
-    mockWhen.mockImplementation(captureStep as any);
-    mockThen.mockImplementation(captureStep as any);
+    mockGiven.mockImplementation(captureStep as never);
+    mockWhen.mockImplementation(captureStep as never);
+    mockThen.mockImplementation(captureStep as never);
 
-    // Create mock container
+    // Create mock container with proper typing
+    const mockGetConfig = jest.fn<() => FrameworkConfig>();
+    mockGetConfig.mockReturnValue({ enableLogging: false } as FrameworkConfig);
+
+    const mockIsDisposed = jest.fn<() => boolean>();
+    mockIsDisposed.mockReturnValue(false);
+
+    const mockDispose = jest.fn<() => Promise<void>>();
+
     mockContainer = {
       lambdaService: mockLambdaService,
       s3Service: mockS3Service,
       healthValidator: mockHealthValidator,
-      getConfig: jest
-        .fn()
-        .mockReturnValue({ enableLogging: false } as FrameworkConfig),
-      isDisposed: jest.fn().mockReturnValue(false),
-      dispose: jest.fn(),
-    } as any as IServiceContainer;
+      getConfig: mockGetConfig,
+      isDisposed: mockIsDisposed,
+      dispose: mockDispose,
+    } as unknown as IServiceContainer;
 
     // Create fresh context for each test
     mockContext = {};
@@ -115,10 +141,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('Given: I have a Lambda function named {string}', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get('I have a Lambda function named {string}')!;
+      step = getStep('I have a Lambda function named {string}');
     });
 
     it('should set function name in context', async () => {
@@ -151,12 +177,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('When: I invoke the Lambda function with payload {string}', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get(
-        'I invoke the Lambda function with payload {string}'
-      )!;
+      step = getStep('I invoke the Lambda function with payload {string}');
       mockContext.functionName = 'test-function';
     });
 
@@ -202,12 +226,12 @@ describe('LambdaSteps', () => {
   });
 
   describe('When: I invoke the Lambda function with payload {string} and timeout {int} seconds', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get(
+      step = getStep(
         'I invoke the Lambda function with payload {string} and timeout {int} seconds'
-      )!;
+      );
       mockContext.functionName = 'test-function';
     });
 
@@ -252,12 +276,12 @@ describe('LambdaSteps', () => {
   });
 
   describe('When: I invoke the Lambda function with payload {string} and timeout {int} minutes', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get(
+      step = getStep(
         'I invoke the Lambda function with payload {string} and timeout {int} minutes'
-      )!;
+      );
       mockContext.functionName = 'test-function';
     });
 
@@ -300,10 +324,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('When: I trigger multiple concurrent operations', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get('I trigger multiple concurrent operations')!;
+      step = getStep('I trigger multiple concurrent operations');
       mockContext.bucketName = 'test-bucket';
       mockS3Service.uploadFile.mockResolvedValue(undefined);
     });
@@ -340,10 +364,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('Then: the Lambda function should return {string}', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get('the Lambda function should return {string}')!;
+      step = getStep('the Lambda function should return {string}');
       mockContext.functionName = 'test-function';
     });
 
@@ -376,10 +400,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('Then: the Lambda function should be invoked', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get('the Lambda function should be invoked')!;
+      step = getStep('the Lambda function should be invoked');
       mockContext.functionName = 'test-function';
     });
 
@@ -433,12 +457,12 @@ describe('LambdaSteps', () => {
   });
 
   describe('Then: the Lambda function should be invoked {int} times within {int} minutes', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get(
+      step = getStep(
         'the Lambda function should be invoked {int} times within {int} minutes'
-      )!;
+      );
       mockContext.functionName = 'test-function';
     });
 
@@ -528,12 +552,10 @@ describe('LambdaSteps', () => {
   });
 
   describe('Then: the Lambda function logs should not contain errors', () => {
-    let step: Function;
+    let step: StepCallback;
 
     beforeEach(() => {
-      step = registeredSteps.get(
-        'the Lambda function logs should not contain errors'
-      )!;
+      step = getStep('the Lambda function logs should not contain errors');
       mockContext.functionName = 'test-function';
     });
 
@@ -633,9 +655,9 @@ describe('LambdaSteps', () => {
   describe('Edge Cases and Error Handling', () => {
     it('should handle empty payload strings', async () => {
       mockContext.functionName = 'test-function';
-      const step = registeredSteps.get(
+      const step = getStep(
         'I invoke the Lambda function with payload {string}'
-      )!;
+      );
 
       // Empty object is valid JSON
       mockLambdaService.invokeFunction.mockResolvedValue({});
@@ -649,9 +671,9 @@ describe('LambdaSteps', () => {
 
     it('should handle payload with special characters', async () => {
       mockContext.functionName = 'test-function';
-      const step = registeredSteps.get(
+      const step = getStep(
         'I invoke the Lambda function with payload {string}'
-      )!;
+      );
 
       const specialPayload = '{"message":"Hello\\nWorld","unicode":"emoji🎉"}';
       mockLambdaService.invokeFunction.mockResolvedValue({});
@@ -663,9 +685,7 @@ describe('LambdaSteps', () => {
 
     it('should handle concurrent operations with S3 errors', async () => {
       mockContext.bucketName = 'test-bucket';
-      const step = registeredSteps.get(
-        'I trigger multiple concurrent operations'
-      )!;
+      const step = getStep('I trigger multiple concurrent operations');
 
       // Simulate upload failing on second call
       let callCount = 0;
@@ -684,9 +704,9 @@ describe('LambdaSteps', () => {
   describe('Integration with Services', () => {
     it('should use container services correctly', async () => {
       mockContext.functionName = 'test-function';
-      const invokeStep = registeredSteps.get(
+      const invokeStep = getStep(
         'I invoke the Lambda function with payload {string}'
-      )!;
+      );
 
       mockLambdaService.invokeFunction.mockResolvedValue({});
 
@@ -698,9 +718,7 @@ describe('LambdaSteps', () => {
 
     it('should propagate service errors', async () => {
       mockContext.functionName = 'test-function';
-      const step = registeredSteps.get(
-        'I have a Lambda function named {string}'
-      )!;
+      const step = getStep('I have a Lambda function named {string}');
 
       mockLambdaService.findFunction.mockRejectedValue(
         new Error('AWS Service Error')
