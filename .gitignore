@@ -148,3 +148,12 @@ docs/
 
 # Stryker mutation testing HTML report
 reports/mutation/mutation.html
+
+# Internal strategy and planning documents
+ROADMAP.md
+PHASE_1_EXECUTION_PLAN.md
+PRODUCT_STRATEGY.md
+STRATEGIC_REVIEW_SUMMARY.md
+STRATEGY_ONE_PAGER.md
+STRATEGY_README.md
+CORRELATION_TRACKING_DESIGN.md
