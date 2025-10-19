@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { BaseStepDefinition } from '../container/StepDefinitionFactory';
+import { BaseStepDefinition } from '../container/BaseStepDefinition';
 import type { StepContext } from '../types';
 
 /**

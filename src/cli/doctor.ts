@@ -49,7 +49,10 @@ class EnvironmentDoctor {
 
   private async checkNodeVersion(): Promise<void> {
     const nodeVersion = process.version;
-    const majorVersion = Number.parseInt(nodeVersion.slice(1).split('.')[0]);
+    const majorVersion = Number.parseInt(
+      nodeVersion.slice(1).split('.')[0],
+      10
+    );
 
     if (majorVersion >= 18) {
       this.addResult({

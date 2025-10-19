@@ -27,9 +27,6 @@ export class AWSTestingFramework implements IServiceContainer {
   public get stepFunctionService() {
     return this.container.stepFunctionService;
   }
-  public get performanceMonitor() {
-    return this.container.performanceMonitor;
-  }
   public get stepContextManager() {
     return this.container.stepContextManager;
   }

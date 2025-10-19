@@ -144,7 +144,6 @@ src/
 │   │   ├── SQSService.ts
 │   │   ├── LambdaService.ts
 │   │   ├── StepFunctionService.ts
-│   │   ├── PerformanceMonitor.ts
 │   │   ├── StepContextManager.ts
 │   │   └── HealthValidator.ts
 │   ├── AWSTestingFramework.ts  # Main framework class

@@ -72,5 +72,4 @@ function registerAllSteps(): void {
   steps.sqsSteps.registerSteps();
   steps.lambdaSteps.registerSteps();
   steps.stepFunctionSteps.registerSteps();
-  steps.monitoringSteps.registerSteps();
 }

@@ -1,31 +1,12 @@
+// Export base class for step definitions
+export { BaseStepDefinition } from './BaseStepDefinition';
+
 // Import step definition classes
 import { LambdaSteps } from '../steps/LambdaSteps';
-import { MonitoringSteps } from '../steps/MonitoringSteps';
 import { S3Steps } from '../steps/S3Steps';
 import { SQSSteps } from '../steps/SQSSteps';
 import { StepFunctionSteps } from '../steps/StepFunctionSteps';
 import type { IServiceContainer } from './ServiceContainer';
-
-/**
- * Base class for step definitions with dependency injection
- */
-export abstract class BaseStepDefinition {
-  constructor(protected readonly container: IServiceContainer) {}
-
-  /**
-   * Get the current configuration
-   */
-  protected getConfig() {
-    return this.container.getConfig();
-  }
-
-  /**
-   * Check if the container is disposed
-   */
-  protected isDisposed(): boolean {
-    return this.container.isDisposed();
-  }
-}
 
 /**
  * Factory for creating step definition instances with proper dependency injection
@@ -62,13 +43,6 @@ export class StepDefinitionFactory {
   }
 
   /**
-   * Create monitoring step definitions
-   */
-  createMonitoringSteps(): MonitoringSteps {
-    return new MonitoringSteps(this.container);
-  }
-
-  /**
    * Create all step definitions
    */
   createAllSteps(): {
@@ -76,14 +50,12 @@ export class StepDefinitionFactory {
     sqsSteps: SQSSteps;
     lambdaSteps: LambdaSteps;
     stepFunctionSteps: StepFunctionSteps;
-    monitoringSteps: MonitoringSteps;
   } {
     return {
       s3Steps: this.createS3Steps(),
       sqsSteps: this.createSQSSteps(),
       lambdaSteps: this.createLambdaSteps(),
       stepFunctionSteps: this.createStepFunctionSteps(),
-      monitoringSteps: this.createMonitoringSteps(),
     };
   }
 }

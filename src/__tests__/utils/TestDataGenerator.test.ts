@@ -43,8 +43,8 @@ describe('TestDataGenerator', () => {
       const id1 = generator.generateCorrelationId();
       const id2 = generator.generateCorrelationId();
 
-      const counter1 = Number.parseInt(id1.split('-')[2]);
-      const counter2 = Number.parseInt(id2.split('-')[2]);
+      const counter1 = Number.parseInt(id1.split('-')[2], 10);
+      const counter2 = Number.parseInt(id2.split('-')[2], 10);
 
       expect(counter2).toBe(counter1 + 1);
     });
@@ -782,8 +782,8 @@ describe('Edge cases and error conditions', () => {
     expect(id2).toMatch(/^test-\d+-\d+$/);
 
     // Verify each instance starts with counter 1
-    const counter1 = Number.parseInt(id1.split('-')[2]);
-    const counter2 = Number.parseInt(id2.split('-')[2]);
+    const counter1 = Number.parseInt(id1.split('-')[2], 10);
+    const counter2 = Number.parseInt(id2.split('-')[2], 10);
     expect(counter1).toBe(1);
     expect(counter2).toBe(1);
 
@@ -791,8 +791,8 @@ describe('Edge cases and error conditions', () => {
     const id3 = generator1.generateCorrelationId();
     const id4 = generator2.generateCorrelationId();
 
-    const counter3 = Number.parseInt(id3.split('-')[2]);
-    const counter4 = Number.parseInt(id4.split('-')[2]);
+    const counter3 = Number.parseInt(id3.split('-')[2], 10);
+    const counter4 = Number.parseInt(id4.split('-')[2], 10);
     expect(counter3).toBe(2); // Second call on generator1
     expect(counter4).toBe(2); // Second call on generator2
   });

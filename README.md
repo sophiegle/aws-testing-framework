@@ -127,8 +127,6 @@ npx aws-testing-framework steps --export steps.md
 - **📨 SQS Steps**: Message sending, receiving, and queue management
 - **⚡ Lambda Steps**: Function invocation, execution tracking, and timeout configuration
 - **🔄 Step Function Steps**: Workflow execution, state verification, and SLA compliance
-- **🔗 Correlation Steps**: End-to-end data tracing across services
-- **📊 Monitoring Steps**: CloudWatch logs analysis and performance monitoring
 
 ## 📖 Example Project
 
@@ -265,21 +263,6 @@ const endTime = new Date();
 const count = await framework.countLambdaExecutions('my-function', startTime, endTime);
 ```
 
-### Performance Monitoring
-
-```typescript
-// Start performance monitoring
-framework.startTestRun();
-
-// Perform operations
-await framework.uploadFile('my-bucket', 'test.txt', 'content');
-await framework.sendMessage('queue-url', 'message');
-
-// Get comprehensive metrics
-const metrics = framework.getTestMetrics();
-console.log(framework.generatePerformanceReport());
-```
-
 ### CloudWatch Logs Analysis
 
 ```typescript
@@ -388,17 +371,14 @@ The framework uses a modular architecture with dedicated service classes:
 - **`SQSService`**: SQS queue and message operations
 - **`LambdaService`**: Lambda function operations with CloudWatch log verification
 - **`StepFunctionService`**: Step Function state machine operations
-- **`PerformanceMonitor`**: Performance metrics and reporting
 - **`StepContextManager`**: Test step context management
 - **`HealthValidator`**: AWS service health validation
 
 ### Step Definitions
-- **`s3-steps.ts`**: S3 operations (file uploads, bucket verification)
-- **`sqs-steps.ts`**: SQS operations (message sending, queue verification)
-- **`lambda-steps.ts`**: Lambda operations (function invocation, execution tracking, execution counting)
-- **`step-function-steps.ts`**: Step Function operations (execution, state verification)
-- **`monitoring-steps.ts`**: CloudWatch logs and advanced monitoring
-- **`correlation-steps.ts`**: Cross-service correlation and data tracing
+- **`S3Steps.ts`**: S3 operations (file uploads, bucket verification)
+- **`SQSSteps.ts`**: SQS operations (message sending, queue verification)
+- **`LambdaSteps.ts`**: Lambda operations (function invocation, execution tracking, execution counting)
+- **`StepFunctionSteps.ts`**: Step Function operations (execution, state verification, SLA compliance)
 
 ## 🛠️ Development
 

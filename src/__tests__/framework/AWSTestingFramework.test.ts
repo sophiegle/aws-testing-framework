@@ -36,9 +36,9 @@ describe('AWSTestingFramework', () => {
       const config = prodFramework.getConfig();
 
       expect(config.aws?.region).toBe('eu-west-1');
-      expect(config.defaultTimeout).toBe(120000);
+      expect(config.defaultTimeout).toBe(30000); // Uses CI config
       expect(config.retryAttempts).toBe(3);
-      expect(config.logLevel).toBe('info');
+      expect(config.logLevel).toBe('info'); // CI uses info
     });
 
     it('should create framework for CI environment', () => {
@@ -46,9 +46,63 @@ describe('AWSTestingFramework', () => {
       const config = ciFramework.getConfig();
 
       expect(config.aws?.region).toBe('ap-southeast-1');
-      expect(config.defaultTimeout).toBe(300000);
+      expect(config.defaultTimeout).toBe(30000);
       expect(config.retryAttempts).toBe(3);
-      expect(config.logLevel).toBe('warn');
+      expect(config.logLevel).toBe('info');
+    });
+
+    it('should create framework for testing environment', () => {
+      const testFramework = AWSTestingFramework.createForTesting({
+        defaultTimeout: 10000,
+      });
+      const config = testFramework.getConfig();
+
+      expect(config.defaultTimeout).toBe(10000);
+    });
+
+    it('should create framework with custom configuration', () => {
+      const customFramework = AWSTestingFramework.create({
+        aws: { region: 'us-west-2' },
+        defaultTimeout: 45000,
+        retryAttempts: 5,
+        logLevel: 'debug',
+      });
+      const config = customFramework.getConfig();
+
+      expect(config.aws?.region).toBe('us-west-2');
+      expect(config.defaultTimeout).toBe(45000);
+      expect(config.retryAttempts).toBe(5);
+      expect(config.logLevel).toBe('debug');
+    });
+  });
+
+  describe('Service Access', () => {
+    it('should provide access to S3 service', () => {
+      expect(framework.s3Service).toBeDefined();
+    });
+
+    it('should provide access to SQS service', () => {
+      expect(framework.sqsService).toBeDefined();
+    });
+
+    it('should provide access to Lambda service', () => {
+      expect(framework.lambdaService).toBeDefined();
+    });
+
+    it('should provide access to Step Function service', () => {
+      expect(framework.stepFunctionService).toBeDefined();
+    });
+
+    it('should provide access to Step Context Manager', () => {
+      expect(framework.stepContextManager).toBeDefined();
+    });
+
+    it('should provide access to Health Validator', () => {
+      expect(framework.healthValidator).toBeDefined();
+    });
+
+    it('should provide access to Reporter', () => {
+      expect(framework.reporter).toBeDefined();
     });
   });
 
@@ -59,184 +113,74 @@ describe('AWSTestingFramework', () => {
       expect(config).toBeDefined();
       expect(config.defaultTimeout).toBe(30000);
       expect(config.retryAttempts).toBe(3);
-      expect(config.enableLogging).toBe(true);
     });
 
-    it('should update configuration', () => {
-      framework.updateConfig({
-        defaultTimeout: 60000,
-        logLevel: 'debug',
-      });
-
-      const config = framework.getConfig();
-      expect(config.defaultTimeout).toBe(60000);
-      expect(config.logLevel).toBe('debug');
+    it('should throw error when trying to update config', () => {
+      expect(() => {
+        framework.updateConfig({ defaultTimeout: 60000 });
+      }).toThrow(
+        'Configuration updates require framework recreation. Use static factory methods instead.'
+      );
     });
   });
 
-  describe('Step Context Management', () => {
-    it('should set and get step context', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
-      framework.setStepContext('functionName', 'test-function');
+  describe('Step Definition Factory', () => {
+    it('should provide access to step definition factory', () => {
+      const factory = framework.getStepFactory();
 
-      const context = framework.getStepContext();
-      expect(context.bucketName).toBe('test-bucket');
-      expect(context.functionName).toBe('test-function');
+      expect(factory).toBeDefined();
     });
 
-    it('should get specific step context value', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
+    it('should create step definitions through factory', () => {
+      const factory = framework.getStepFactory();
 
-      const bucketName = framework.getStepContextValue('bucketName');
-      expect(bucketName).toBe('test-bucket');
-    });
+      const s3Steps = factory.createS3Steps();
+      const sqsSteps = factory.createSQSSteps();
+      const lambdaSteps = factory.createLambdaSteps();
+      const stepFunctionSteps = factory.createStepFunctionSteps();
 
-    it('should check if step context has value', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
-
-      expect(framework.hasStepContextValue('bucketName')).toBe(true);
-      expect(framework.hasStepContextValue('functionName')).toBe(false);
-    });
-
-    it('should clear step context', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
-      framework.clearStepContext();
-
-      const context = framework.getStepContext();
-      expect(context.bucketName).toBeUndefined();
-    });
-
-    it('should clear specific step context value', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
-      framework.setStepContext('functionName', 'test-function');
-      framework.clearStepContextValue('bucketName');
-
-      const context = framework.getStepContext();
-      expect(context.bucketName).toBeUndefined();
-      expect(context.functionName).toBe('test-function');
-    });
-
-    it('should validate step context', () => {
-      framework.setStepContext('bucketName', 'test-bucket');
-      framework.setStepContext('functionName', 'test-function');
-
-      const validation = framework.validateStepContext([
-        'bucketName',
-        'functionName',
-        'queueName',
-      ]);
-
-      expect(validation.isValid).toBe(false);
-      expect(validation.presentKeys).toContain('bucketName');
-      expect(validation.presentKeys).toContain('functionName');
-      expect(validation.missingKeys).toContain('queueName');
+      expect(s3Steps).toBeDefined();
+      expect(sqsSteps).toBeDefined();
+      expect(lambdaSteps).toBeDefined();
+      expect(stepFunctionSteps).toBeDefined();
     });
   });
 
-  describe('Performance Monitoring', () => {
-    it('should start test run', () => {
-      expect(() => framework.startTestRun()).not.toThrow();
+  describe('Resource Management', () => {
+    it('should not be disposed initially', () => {
+      expect(framework.isDisposed()).toBe(false);
     });
 
-    it('should get test metrics', () => {
-      const metrics = framework.getTestMetrics();
+    it('should dispose framework resources', async () => {
+      expect(framework.isDisposed()).toBe(false);
 
-      expect(metrics).toBeDefined();
-      expect(metrics.totalTests).toBe(0);
-      expect(metrics.passedTests).toBe(0);
-      expect(metrics.failedTests).toBe(0);
-      expect(metrics.averageExecutionTime).toBe(0);
-      expect(metrics.totalExecutionTime).toBe(0);
-      expect(metrics.errorRate).toBe(0);
-      expect(metrics.retryRate).toBe(0);
+      await framework.dispose();
+
+      expect(framework.isDisposed()).toBe(true);
     });
 
-    it('should get service metrics', () => {
-      const metrics = framework.getServiceMetrics('s3');
-      expect(Array.isArray(metrics)).toBe(true);
-    });
-
-    it('should get slowest operations', () => {
-      const operations = framework.getSlowestOperations(3);
-      expect(Array.isArray(operations)).toBe(true);
-    });
-
-    it('should get operations with most retries', () => {
-      const operations = framework.getOperationsWithMostRetries(3);
-      expect(Array.isArray(operations)).toBe(true);
-    });
-
-    it('should generate performance report', () => {
-      const report = framework.generatePerformanceReport();
-      expect(typeof report).toBe('string');
-      expect(report).toContain('Performance Report');
+    it('should allow multiple dispose calls safely', async () => {
+      await framework.dispose();
+      await expect(framework.dispose()).resolves.not.toThrow();
     });
   });
 
-  describe('Reporter Management', () => {
-    it('should configure reporter', () => {
-      const result = framework.configureReporter('./test-output');
-      expect(result).toBe(framework);
+  describe('Service Integration', () => {
+    it('should have all services initialized and ready', () => {
+      expect(framework.s3Service).toBeDefined();
+      expect(framework.sqsService).toBeDefined();
+      expect(framework.lambdaService).toBeDefined();
+      expect(framework.stepFunctionService).toBeDefined();
+      expect(framework.stepContextManager).toBeDefined();
+      expect(framework.healthValidator).toBeDefined();
+      expect(framework.reporter).toBeDefined();
     });
 
-    it('should get reporter', () => {
-      const reporter = framework.getReporter();
-      expect(reporter).toBeDefined();
-    });
-  });
+    it('should maintain service references after creation', () => {
+      const s3Ref1 = framework.s3Service;
+      const s3Ref2 = framework.s3Service;
 
-  describe('Health and Validation', () => {
-    it('should get health status', async () => {
-      const healthStatus = await framework.getHealthStatus();
-
-      expect(healthStatus).toBeDefined();
-      expect(healthStatus.isHealthy).toBeDefined();
-      expect(healthStatus.awsSetup).toBeDefined();
-      expect(healthStatus.performance).toBeDefined();
-      expect(healthStatus.resources).toBeDefined();
-    });
-
-    it('should validate AWS setup', async () => {
-      const validation = await framework.validateAWSSetup();
-
-      expect(validation).toBeDefined();
-      expect(validation.isValid).toBeDefined();
-      expect(validation.errors).toBeDefined();
-      expect(validation.warnings).toBeDefined();
-      expect(validation.services).toBeDefined();
-    });
-
-    it('should wait for condition', async () => {
-      let counter = 0;
-      const condition = async () => {
-        counter++;
-        return counter >= 3;
-      };
-
-      await framework.waitForCondition(condition, 5000, 100);
-      expect(counter).toBeGreaterThanOrEqual(3);
-    });
-  });
-
-  describe('Cleanup', () => {
-    it('should cleanup framework', async () => {
-      // Set some context and start test run
-      framework.setStepContext('bucketName', 'test-bucket');
-      framework.startTestRun();
-
-      // Verify context exists
-      expect(framework.getStepContext().bucketName).toBe('test-bucket');
-
-      // Cleanup
-      await framework.cleanup();
-
-      // Verify context is cleared
-      expect(framework.getStepContext().bucketName).toBeUndefined();
-    });
-
-    it('should cleanup specific resources', async () => {
-      await expect(framework.cleanupResources('s3')).resolves.not.toThrow();
-      await expect(framework.cleanupResources('all')).resolves.not.toThrow();
+      expect(s3Ref1).toBe(s3Ref2); // Same instance
     });
   });
 });

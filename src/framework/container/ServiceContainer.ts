@@ -6,7 +6,6 @@ import { SQSClient } from '@aws-sdk/client-sqs';
 import { TestReporter } from '../../reporting/TestReporter';
 import { HealthValidator } from '../services/HealthValidator';
 import { LambdaService } from '../services/LambdaService';
-import { PerformanceMonitor } from '../services/PerformanceMonitor';
 import { S3Service } from '../services/S3Service';
 import { SQSService } from '../services/SQSService';
 import { StepContextManager } from '../services/StepContextManager';
@@ -21,7 +20,6 @@ export interface IServiceContainer {
   readonly sqsService: SQSService;
   readonly lambdaService: LambdaService;
   readonly stepFunctionService: StepFunctionService;
-  readonly performanceMonitor: PerformanceMonitor;
   readonly stepContextManager: StepContextManager;
   readonly healthValidator: HealthValidator;
   readonly reporter: TestReporter;
@@ -58,7 +56,6 @@ export class ServiceContainer implements IServiceContainer {
   public readonly sqsService: SQSService;
   public readonly lambdaService: LambdaService;
   public readonly stepFunctionService: StepFunctionService;
-  public readonly performanceMonitor: PerformanceMonitor;
   public readonly stepContextManager: StepContextManager;
   public readonly healthValidator: HealthValidator;
   public readonly reporter: TestReporter;
@@ -107,7 +104,6 @@ export class ServiceContainer implements IServiceContainer {
       this.config.lambda
     );
     this.stepFunctionService = new StepFunctionService(this.sfnClient);
-    this.performanceMonitor = new PerformanceMonitor();
     this.stepContextManager = new StepContextManager();
     this.healthValidator = new HealthValidator(
       this.s3Client,
@@ -127,11 +123,6 @@ export class ServiceContainer implements IServiceContainer {
    */
   private registerCleanupTasks(): void {
     // Clear any pending timeouts or intervals
-    this.cleanupTasks.push(async () => {
-      // Performance monitor cleanup
-      // The PerformanceMonitor maintains metrics in memory
-      // These will be garbage collected when the container is disposed
-    });
 
     // Clear step context
     this.cleanupTasks.push(async () => {

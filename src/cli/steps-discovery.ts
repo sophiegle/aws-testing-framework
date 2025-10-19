@@ -111,17 +111,23 @@ export class StepDiscoveryCommand {
 
       if (givenSteps.length > 0) {
         console.log('\n🔧 Given (Setup):');
-        givenSteps.forEach((step) => this.displayStep(step));
+        givenSteps.forEach((step) => {
+          this.displayStep(step);
+        });
       }
 
       if (whenSteps.length > 0) {
         console.log('\n⚡ When (Actions):');
-        whenSteps.forEach((step) => this.displayStep(step));
+        whenSteps.forEach((step) => {
+          this.displayStep(step);
+        });
       }
 
       if (thenSteps.length > 0) {
         console.log('\n✅ Then (Verifications):');
-        thenSteps.forEach((step) => this.displayStep(step));
+        thenSteps.forEach((step) => {
+          this.displayStep(step);
+        });
       }
 
       console.log('\n');
@@ -183,7 +189,9 @@ export class StepDiscoveryCommand {
 
     console.log(`🔍 Search Results for "${searchTerm}"`);
     console.log('='.repeat(50));
-    filteredSteps.forEach((step) => this.displayStep(step));
+    filteredSteps.forEach((step) => {
+      this.displayStep(step);
+    });
   }
 
   async filterByService(service: string): Promise<void> {
@@ -194,7 +202,9 @@ export class StepDiscoveryCommand {
 
     console.log(`📦 ${service.toUpperCase()} Steps`);
     console.log('='.repeat(50));
-    serviceSteps.forEach((step) => this.displayStep(step));
+    serviceSteps.forEach((step) => {
+      this.displayStep(step);
+    });
   }
 
   async getStepDetail(stepPattern: string): Promise<void> {

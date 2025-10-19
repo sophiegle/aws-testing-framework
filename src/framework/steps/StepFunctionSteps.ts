@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { BaseStepDefinition } from '../container/StepDefinitionFactory';
+import { BaseStepDefinition } from '../container/BaseStepDefinition';
 import type { StepContext } from '../types';
 
 /**
@@ -82,25 +82,6 @@ export class StepFunctionSteps extends BaseStepDefinition {
       }
     );
 
-    // TODO: Implement validateStateMachineDefinition in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function should have valid state machine definition',
-    //   async function (this: StepContext) {
-    //     const stateMachineName = requireStateMachineName(this);
-    //
-    //     const definition =
-    //       await container.stepFunctionService.validateStateMachineDefinition(
-    //         stateMachineName
-    //       );
-    //
-    //     if (!definition.isValid) {
-    //       throw new Error(
-    //         `Invalid state machine definition: ${definition.errors.join(', ')}`
-    //       );
-    //     }
-    //   }
-    // );
-
     Then(
       'the Step Function should be executed',
       async function (this: StepContext) {
@@ -173,162 +154,6 @@ export class StepFunctionSteps extends BaseStepDefinition {
     //         'Step Function execution did not complete all expected states. ' +
     //           `Completed: ${result.completedStates.join(', ')}. ` +
     //           `Failed: ${result.failedStates.join(', ')}`
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement getExecutionPerformance in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function execution should complete within {int} milliseconds',
-    //   async function (this: StepContext, maxExecutionTime: number) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     if (maxExecutionTime <= 0) {
-    //       throw new Error('Maximum execution time must be greater than 0');
-    //     }
-    //
-    //     const performance =
-    //       await container.stepFunctionService.getExecutionPerformance(
-    //         executionArn
-    //       );
-    //
-    //     if (performance.totalExecutionTime > maxExecutionTime) {
-    //       throw new Error(
-    //         `Step Function execution took ${performance.totalExecutionTime}ms, ` +
-    //           `exceeding the maximum allowed time of ${maxExecutionTime}ms`
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement getExecutionPerformance in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function performance should be acceptable',
-    //   async function (this: StepContext) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     const performance =
-    //       await container.stepFunctionService.getExecutionPerformance(
-    //         executionArn
-    //       );
-    //
-    //     // Define acceptable performance thresholds
-    //     const maxTotalTime = 30000; // 30 seconds
-    //     const maxAverageStateTime = 5000; // 5 seconds per state
-    //
-    //     if (performance.totalExecutionTime > maxTotalTime) {
-    //       throw new Error(
-    //         `Step Function execution took ${performance.totalExecutionTime}ms, ` +
-    //           `exceeding the acceptable threshold of ${maxTotalTime}ms`
-    //       );
-    //     }
-    //
-    //     if (performance.averageStateExecutionTime > maxAverageStateTime) {
-    //       throw new Error(
-    //         `Average state execution time was ${performance.averageStateExecutionTime}ms, ` +
-    //           `exceeding the acceptable threshold of ${maxAverageStateTime}ms`
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement getExecutionTriggerTime in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function should have been triggered within {int} seconds',
-    //   async function (this: StepContext, maxTriggerTime: number) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     if (maxTriggerTime <= 0) {
-    //       throw new Error('Maximum trigger time must be greater than 0');
-    //     }
-    //
-    //     const triggerTime =
-    //       await container.stepFunctionService.getExecutionTriggerTime(
-    //         executionArn
-    //       );
-    //
-    //     if (triggerTime > maxTriggerTime * 1000) {
-    //       throw new Error(
-    //         `Step Function was triggered after ${triggerTime}ms, ` +
-    //           `exceeding the maximum allowed trigger time of ${maxTriggerTime} seconds`
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement validateStateMachineDefinition in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function definition should have at least {int} states',
-    //   async function (this: StepContext, minStateCount: number) {
-    //     const stateMachineName = requireStateMachineName(this);
-    //
-    //     if (minStateCount <= 0) {
-    //       throw new Error('Minimum state count must be greater than 0');
-    //     }
-    //
-    //     const definition =
-    //       await container.stepFunctionService.validateStateMachineDefinition(
-    //         stateMachineName
-    //       );
-    //
-    //     if (definition.stateCount < minStateCount) {
-    //       throw new Error(
-    //         `Step Function definition has ${definition.stateCount} states, ` +
-    //           `but requires at least ${minStateCount} states`
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement analyzeDataFlow in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function execution should have no data loss or corruption',
-    //   async function (this: StepContext) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     const dataFlow =
-    //       await container.stepFunctionService.analyzeDataFlow(
-    //         executionArn
-    //       );
-    //
-    //     if (dataFlow.dataLoss) {
-    //       throw new Error('Step Function execution resulted in data loss');
-    //     }
-    //
-    //     if (dataFlow.dataCorruption) {
-    //       throw new Error(
-    //         'Step Function execution resulted in data corruption'
-    //       );
-    //     }
-    //   }
-    // );
-
-    // TODO: Implement getExecutionFailureReason in StepFunctionService before enabling
-    // Then(
-    //   'the operation should fail with appropriate error message',
-    //   async function (this: StepContext) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     const status =
-    //       await container.stepFunctionService.getExecutionStatus(
-    //         executionArn
-    //       );
-    //
-    //     if (status !== 'FAILED') {
-    //       throw new Error(
-    //         `Expected Step Function execution to fail, but it ${status.toLowerCase()}`
-    //       );
-    //     }
-    //
-    //     const failureReason =
-    //       await container.stepFunctionService.getExecutionFailureReason(
-    //         executionArn
-    //       );
-    //
-    //     if (!failureReason || failureReason.trim() === '') {
-    //       throw new Error(
-    //         'Step Function execution failed but no error message was provided'
     //       );
     //     }
     //   }
