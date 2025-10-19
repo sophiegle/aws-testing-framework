@@ -37,63 +37,47 @@ npm install aws-testing-framework
 
 ## 🚀 Quick Start
 
-### 1. Set Up AWS Credentials
+### 5-Minute Setup
 
 ```bash
-# Using AWS CLI (recommended)
+# 1. Install
+npm install aws-testing-framework
+
+# 2. Initialize project (interactive)
+npx aws-testing-framework init --interactive
+
+# 3. Configure AWS credentials
 aws configure
 
-# Or environment variables
-export AWS_ACCESS_KEY_ID=your_access_key
-export AWS_SECRET_ACCESS_KEY=your_secret_key
-export AWS_REGION=us-east-1
+# 4. Verify environment
+npx aws-testing-framework doctor
+
+# 5. Run example tests
+npx cucumber-js
 ```
 
-### 2. Create Your First Test
+### First Test Example
 
 ```gherkin
-Feature: End-to-End Data Pipeline
-  Scenario: Process uploaded file
-    Given I have an S3 bucket named "test-bucket"
-    And I have a Lambda function named "test-processor"
-    And I have a Step Function named "test-pipeline"
-    When I upload a file "test-data.json" with content "test-content" to the S3 bucket
-    Then the S3 bucket should contain the file "test-data.json"
-    And the Lambda function should be invoked
-    And the Step Function should be executed
+Feature: My First Test
+
+  Scenario: Verify Lambda exists
+    Given I have a Lambda function named "my-existing-function"
+    When I invoke the Lambda function with payload "{"test":"data"}"
+    Then the Lambda function should be invoked
 ```
 
-### 3. Configure Cucumber
+**📖 [Complete Setup Guide](GETTING_STARTED.md)** - Comprehensive walkthrough with CloudFormation templates, troubleshooting, and learning path.
 
-```javascript
-// cucumber.js
-module.exports = {
-  default: {
-    requireModule: ['ts-node/register'],
-    require: ['node_modules/aws-testing-framework/dist/steps/*.js'],
-    format: ['progress', 'html:reports/cucumber-report.html'],
-    formatOptions: { snippetInterface: 'async-await' }
-  }
-};
-```
-
-### 4. Discover Available Steps
+### Discover Available Steps
 
 ```bash
-# List all available step definitions
+# See all available step definitions
 npx aws-testing-framework steps
 
-# Search for specific steps
+# Search for specific functionality
 npx aws-testing-framework steps --search "lambda"
-
-# Generate a feature file with examples
-npx aws-testing-framework generate-feature
-```
-
-### 5. Run Your Tests
-
-```bash
-npx cucumber-js
+npx aws-testing-framework steps --search "upload"
 ```
 
 ## 🔍 Step Discovery
@@ -151,8 +135,10 @@ npm run test:all
 
 ## 📚 Documentation
 
+- **[Getting Started Guide](GETTING_STARTED.md)** - Complete setup walkthrough (START HERE!)
 - **[GitHub Repository](https://github.com/sophiegle/aws-testing-framework)** - Source code and issues
 - **[Example Project](https://github.com/sophiegle/aws-testing-framework-test)** - Complete usage examples
+- **[CHANGELOG](CHANGELOG.md)** - Version history and release notes
 - **[Lambda CloudWatch Verification](docs/LAMBDA_CLOUDWATCH_VERIFICATION.md)** - Detailed guide for Lambda execution verification
 
 ## 🔧 Configuration
