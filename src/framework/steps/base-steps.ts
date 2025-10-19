@@ -73,3 +73,9 @@ function registerAllSteps(): void {
   steps.lambdaSteps.registerSteps();
   steps.stepFunctionSteps.registerSteps();
 }
+
+// Auto-initialize framework when module is loaded for Cucumber
+// This ensures steps are registered before Cucumber parses feature files
+if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+  initializeFramework();
+}
