@@ -150,14 +150,26 @@ export class LambdaSteps extends BaseStepDefinition {
           );
         }
 
-        await container.healthValidator.waitForCondition(async () => {
-          if (!this.functionName) return false;
-          const lambdaTriggered =
-            await container.lambdaService.checkLambdaExecution(
-              this.functionName
-            );
-          return lambdaTriggered;
-        });
+        // Use timeout from config, environment variable, or default to 60 seconds for verification
+        // Verification typically needs less time than full invocation, but can be overridden
+        const config = container.getConfig();
+        const timeoutMs =
+          config.lambda?.timeout ||
+          Number.parseInt(process.env.LAMBDA_TIMEOUT_MS || '60000', 10) ||
+          60000; // Default to 60s for verification (shorter than default invocation timeout)
+
+        await container.healthValidator.waitForCondition(
+          async () => {
+            if (!this.functionName) return false;
+            const lambdaTriggered =
+              await container.lambdaService.checkLambdaExecution(
+                this.functionName
+              );
+            return lambdaTriggered;
+          },
+          timeoutMs,
+          2000 // Use 2 second interval to reduce CloudWatch API calls
+        );
       }
     );
 

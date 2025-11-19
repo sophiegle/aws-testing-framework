@@ -21,8 +21,7 @@ module.exports = {
   },
 
   lambda: {
-    defaultInvocationTimeout: 600000, // 10 minutes for debugging
-    maxInvocationTimeout: 1800000, // 30 minutes max
+    timeout: 600000, // 10 minutes for debugging
   },
 
   ci: {

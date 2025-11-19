@@ -1,3 +1,4 @@
+import { ConfigManager } from '../../config/ConfigManager';
 import { ServiceContainer } from '../container/ServiceContainer';
 import { StepDefinitionFactory } from '../container/StepDefinitionFactory';
 import type { FrameworkConfig } from '../types';
@@ -74,8 +75,34 @@ function registerAllSteps(): void {
   steps.stepFunctionSteps.registerSteps();
 }
 
+/**
+ * Convert AWSTestingFrameworkConfig to FrameworkConfig format
+ */
+function convertConfigToFrameworkConfig(
+  config: ReturnType<typeof ConfigManager.prototype.autoDetectConfig>
+): FrameworkConfig {
+  return {
+    aws: config.aws,
+    defaultTimeout: config.testing?.defaultTimeout,
+    retryAttempts: config.testing?.retryAttempts,
+    retryDelay: config.testing?.retryDelay,
+    enableLogging: config.testing?.verbose,
+    logLevel: config.testing?.verbose ? 'debug' : 'info',
+    lambda: config.lambda,
+  };
+}
+
 // Auto-initialize framework when module is loaded for Cucumber
 // This ensures steps are registered before Cucumber parses feature files
 if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
-  initializeFramework();
+  // Auto-load config from aws-testing-framework.config.json if it exists
+  try {
+    const configManager = ConfigManager.getInstance();
+    const configFile = configManager.autoDetectConfig();
+    const frameworkConfig = convertConfigToFrameworkConfig(configFile);
+    initializeFramework(frameworkConfig);
+  } catch {
+    // If config loading fails, use defaults
+    initializeFramework();
+  }
 }
