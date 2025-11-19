@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2025-11-19
+
+### ✨ Added
+- **Auto-load config file**: `aws-testing-framework.config.json` now automatically loads when framework initializes
+  - Works when using the library from another project
+  - Searches up directory tree from `process.cwd()`
+  - Supports multiple config file name variations (`.js`, `.json`, etc.)
+
+### 🔧 Changed
+- **Simplified Lambda timeout configuration**: Consolidated 3 separate timeout configs into a single field
+  - Removed: `defaultInvocationTimeout`, `maxInvocationTimeout`, `invocationVerificationTimeout`
+  - Added: `lambda.timeout` (default: 300000ms = 5 minutes)
+  - Environment variable updated: `LAMBDA_INVOCATION_TIMEOUT_MS` → `LAMBDA_TIMEOUT_MS`
+- **Increased Lambda invocation verification timeout**: Default timeout for "the Lambda function should be invoked" step increased from 30s to 60s to handle CloudWatch log propagation delays in CI environments
+- AWS Lambda max timeout (15 minutes) still enforced via hardcoded validation
+
+### 📚 Documentation
+- Updated example config files to use simplified Lambda timeout configuration
+
+---
+
 ## [0.6.2] - 2025-11-19
 
 ### 🐛 Fixed
