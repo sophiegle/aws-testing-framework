@@ -85,7 +85,7 @@
     "@aws-sdk/client-sfn": "^3.0.0",
     "@aws-sdk/client-sns": "^3.0.0",
     "@aws-sdk/client-sqs": "^3.0.0",
-    "inquirer": "^9.3.8"
+    "inquirer": "^13.0.1"
   },
   "peerDependencies": {
     "@cucumber/cucumber": ">=10.0.0",
