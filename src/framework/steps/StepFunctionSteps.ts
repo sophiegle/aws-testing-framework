@@ -99,64 +99,62 @@ export class StepFunctionSteps extends BaseStepDefinition {
       }
     );
 
-    // TODO: Implement verifyStateOutput in StepFunctionService before enabling
-    // Then(
-    //   'I should be able to verify state output for state {string} with expected data {string}',
-    //   async function (
-    //     this: StepContext,
-    //     stateName: string,
-    //     expectedData: string
-    //   ) {
-    //     const executionArn = requireExecutionArn(this);
-    //
-    //     // Validate JSON expected data
-    //     let parsedExpectedData: Record<string, unknown>;
-    //     try {
-    //       parsedExpectedData = JSON.parse(expectedData);
-    //     } catch (error) {
-    //       throw new Error(
-    //         `Invalid JSON expected data: ${error instanceof Error ? error.message : String(error)}`
-    //       );
-    //     }
-    //
-    //     const verification =
-    //       await container.stepFunctionService.verifyStateOutput(
-    //         executionArn,
-    //         stateName,
-    //         parsedExpectedData
-    //       );
-    //
-    //     if (!verification.matches) {
-    //       throw new Error(
-    //         `State output verification failed for state ${stateName}. ` +
-    //           `Missing fields: ${verification.missingFields.join(', ')}. ` +
-    //           `Extra fields: ${verification.extraFields.join(', ')}`
-    //       );
-    //     }
-    //   }
-    // );
+    Then(
+      'I should be able to verify state output for state {string} with expected data {string}',
+      async function (
+        this: StepContext,
+        stateName: string,
+        expectedData: string
+      ) {
+        const executionArn = requireExecutionArn(this);
 
-    // TODO: Implement verifyExecutionCompletion in StepFunctionService before enabling
-    // Then(
-    //   'the Step Function execution should complete all expected states: {string}',
-    //   async function (this: StepContext, expectedStates: string) {
-    //     const executionArn = requireExecutionArn(this);
-    //     const states = expectedStates.split(',').map((s) => s.trim());
-    //
-    //     const result =
-    //       await container.stepFunctionService.verifyExecutionCompletion(
-    //         executionArn,
-    //         states
-    //       );
-    //
-    //     if (!result.success) {
-    //       throw new Error(
-    //         'Step Function execution did not complete all expected states. ' +
-    //           `Completed: ${result.completedStates.join(', ')}. ` +
-    //           `Failed: ${result.failedStates.join(', ')}`
-    //       );
-    //     }
-    //   }
-    // );
+        // Validate JSON expected data
+        let parsedExpectedData: Record<string, unknown>;
+        try {
+          parsedExpectedData = JSON.parse(expectedData);
+        } catch (error) {
+          throw new Error(
+            `Invalid JSON expected data: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+
+        const verification =
+          await container.stepFunctionService.verifyStepFunctionStateOutput(
+            executionArn,
+            stateName,
+            parsedExpectedData
+          );
+
+        if (!verification.matches) {
+          throw new Error(
+            `State output verification failed for state ${stateName}. ` +
+              `Missing fields: ${verification.missingFields.join(', ')}. ` +
+              `Extra fields: ${verification.extraFields.join(', ')}`
+          );
+        }
+      }
+    );
+
+    Then(
+      'the Step Function execution should complete all expected states: {string}',
+      async function (this: StepContext, expectedStates: string) {
+        const executionArn = requireExecutionArn(this);
+        const states = expectedStates.split(',').map((s) => s.trim());
+
+        const result =
+          await container.stepFunctionService.verifyStepFunctionExecutionSuccess(
+            executionArn,
+            states
+          );
+
+        if (!result.success) {
+          throw new Error(
+            'Step Function execution did not complete all expected states. ' +
+              `Completed: ${result.completedStates.join(', ')}. ` +
+              `Failed: ${result.failedStates.join(', ')}`
+          );
+        }
+      }
+    );
   }
 }
