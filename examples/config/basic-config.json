@@ -19,7 +19,6 @@
     "timeout": 10000
   },
   "lambda": {
-    "defaultInvocationTimeout": 300000,
-    "maxInvocationTimeout": 900000
+    "timeout": 300000
   }
 }

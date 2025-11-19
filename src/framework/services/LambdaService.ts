@@ -9,10 +9,8 @@ import {
 } from '@aws-sdk/client-lambda';
 
 export interface LambdaServiceConfig {
-  /** Default timeout for Lambda invocations in milliseconds */
-  defaultInvocationTimeout?: number;
-  /** Maximum timeout for Lambda invocations in milliseconds */
-  maxInvocationTimeout?: number;
+  /** Timeout for Lambda invocations in milliseconds (default: 300000 = 5 minutes, max: 900000 = 15 minutes) */
+  timeout?: number;
 }
 
 export class LambdaService {
@@ -28,8 +26,7 @@ export class LambdaService {
     this.lambdaClient = lambdaClient;
     this.cloudWatchLogsClient = cloudWatchLogsClient;
     this.config = {
-      defaultInvocationTimeout: 300000, // 5 minutes default
-      maxInvocationTimeout: 900000, // 15 minutes max
+      timeout: 300000, // 5 minutes default
       ...config,
     };
   }
@@ -52,12 +49,13 @@ export class LambdaService {
       invocationType?: 'RequestResponse' | 'Event' | 'DryRun';
     }
   ): Promise<{ Payload?: string } | null> {
-    const timeout = options?.timeout || this.config.defaultInvocationTimeout;
+    const timeout = options?.timeout || this.config.timeout;
 
-    // Validate timeout is within limits
-    if (timeout && timeout > (this.config.maxInvocationTimeout || 900000)) {
+    // Validate timeout is within AWS limits (15 minutes maximum)
+    const MAX_LAMBDA_TIMEOUT = 900000; // 15 minutes
+    if (timeout && timeout > MAX_LAMBDA_TIMEOUT) {
       throw new Error(
-        `Lambda invocation timeout (${timeout}ms) exceeds maximum allowed timeout (${this.config.maxInvocationTimeout}ms)`
+        `Lambda invocation timeout (${timeout}ms) exceeds maximum allowed timeout (${MAX_LAMBDA_TIMEOUT}ms = 15 minutes)`
       );
     }
 

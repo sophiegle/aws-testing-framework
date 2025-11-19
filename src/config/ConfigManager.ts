@@ -26,10 +26,8 @@ export interface AWSTestingFrameworkConfig {
 
   /** Lambda-specific configuration */
   lambda?: {
-    /** Default timeout for Lambda invocations in milliseconds */
-    defaultInvocationTimeout?: number;
-    /** Maximum timeout for Lambda invocations in milliseconds */
-    maxInvocationTimeout?: number;
+    /** Timeout for Lambda invocations and verification in milliseconds (default: 300000 = 5 minutes) */
+    timeout?: number;
   };
 
   /** Reporting configuration */
@@ -206,8 +204,7 @@ export class ConfigManager {
         timeout: 10000,
       },
       lambda: {
-        defaultInvocationTimeout: 300000, // 5 minutes
-        maxInvocationTimeout: 900000, // 15 minutes
+        timeout: 300000, // 5 minutes
       },
       reporting: {
         baseDir: './test-reports',

@@ -28,6 +28,7 @@ describe('LambdaSteps', () => {
   let mockContainer: IServiceContainer;
   let mockContext: StepContext;
   let registeredSteps: Map<string, StepCallback>;
+  let mockGetConfig: jest.Mock<() => FrameworkConfig>;
 
   // Properly typed mock services
   const mockLambdaService = {
@@ -77,7 +78,7 @@ describe('LambdaSteps', () => {
     mockThen.mockImplementation(captureStep as never);
 
     // Create mock container with proper typing
-    const mockGetConfig = jest.fn<() => FrameworkConfig>();
+    mockGetConfig = jest.fn<() => FrameworkConfig>();
     mockGetConfig.mockReturnValue({ enableLogging: false } as FrameworkConfig);
 
     const mockIsDisposed = jest.fn<() => boolean>();
@@ -418,7 +419,11 @@ describe('LambdaSteps', () => {
 
       await step.call(mockContext);
 
-      expect(mockHealthValidator.waitForCondition).toHaveBeenCalled();
+      expect(mockHealthValidator.waitForCondition).toHaveBeenCalledWith(
+        expect.any(Function),
+        60000, // Default timeout
+        2000 // Default interval
+      );
       expect(mockLambdaService.checkLambdaExecution).toHaveBeenCalledWith(
         'test-function'
       );
@@ -452,7 +457,68 @@ describe('LambdaSteps', () => {
 
       await step.call(mockContext);
 
+      expect(mockHealthValidator.waitForCondition).toHaveBeenCalledWith(
+        expect.any(Function),
+        60000, // Default timeout
+        2000 // Default interval
+      );
       expect(mockLambdaService.checkLambdaExecution).toHaveBeenCalled();
+    });
+
+    it('should use custom timeout from environment variable', async () => {
+      const originalEnv = process.env.LAMBDA_TIMEOUT_MS;
+      process.env.LAMBDA_TIMEOUT_MS = '120000'; // 2 minutes
+
+      mockLambdaService.checkLambdaExecution.mockResolvedValue(true);
+      mockHealthValidator.waitForCondition.mockResolvedValue(undefined);
+      mockGetConfig.mockReturnValue({
+        enableLogging: false,
+        lambda: {}, // Empty lambda config, so env var will be used
+      } as FrameworkConfig);
+
+      await step.call(mockContext);
+
+      expect(mockHealthValidator.waitForCondition).toHaveBeenCalledWith(
+        expect.any(Function),
+        120000, // Custom timeout from env var
+        2000 // Default interval
+      );
+
+      // Restore original env
+      if (originalEnv) {
+        process.env.LAMBDA_TIMEOUT_MS = originalEnv;
+      } else {
+        delete process.env.LAMBDA_TIMEOUT_MS;
+      }
+    });
+
+    it('should use custom timeout from config (takes precedence over env var)', async () => {
+      const originalEnv = process.env.LAMBDA_TIMEOUT_MS;
+      process.env.LAMBDA_TIMEOUT_MS = '120000'; // This should be ignored
+
+      mockLambdaService.checkLambdaExecution.mockResolvedValue(true);
+      mockHealthValidator.waitForCondition.mockResolvedValue(undefined);
+      mockGetConfig.mockReturnValue({
+        enableLogging: false,
+        lambda: {
+          timeout: 180000, // 3 minutes - should be used
+        },
+      } as FrameworkConfig);
+
+      await step.call(mockContext);
+
+      expect(mockHealthValidator.waitForCondition).toHaveBeenCalledWith(
+        expect.any(Function),
+        180000, // Custom timeout from config (not env var)
+        2000 // Default interval
+      );
+
+      // Restore original env
+      if (originalEnv) {
+        process.env.LAMBDA_TIMEOUT_MS = originalEnv;
+      } else {
+        delete process.env.LAMBDA_TIMEOUT_MS;
+      }
     });
   });
 
