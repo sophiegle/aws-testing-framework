@@ -13,11 +13,13 @@ export class S3Service {
   }
 
   async findBucket(bucketName: string): Promise<void> {
-    const command = new ListBucketsCommand({
-      Prefix: bucketName,
-    });
-    const bucketFound = await this.s3Client.send(command);
-    if (!bucketFound) {
+    const command = new ListBucketsCommand({});
+    const response = await this.s3Client.send(command);
+
+    const bucketExists = response.Buckets?.some(
+      (bucket) => bucket.Name === bucketName
+    );
+    if (!bucketExists) {
       throw new Error(`Bucket ${bucketName} not found`);
     }
   }
@@ -48,8 +50,15 @@ export class S3Service {
         })
       );
       return true;
-    } catch (_error) {
-      return false;
+    } catch (error) {
+      // Only return false for NoSuchKey errors, re-throw other errors
+      if (error && typeof error === 'object' && 'name' in error) {
+        const awsError = error as { name: string };
+        if (awsError.name === 'NoSuchKey' || awsError.name === 'NotFound') {
+          return false;
+        }
+      }
+      throw error;
     }
   }
 }
