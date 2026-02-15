@@ -121,20 +121,12 @@ export class ServiceContainer implements IServiceContainer {
   /**
    * Register cleanup tasks for proper resource disposal
    */
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Called in constructor
   private registerCleanupTasks(): void {
-    // Clear any pending timeouts or intervals
-
-    // Clear step context
+    // Register step context cleanup task
     this.cleanupTasks.push(async () => {
-      // Step context cleanup
-      // The StepContextManager maintains context in memory
-      // These will be garbage collected when the container is disposed
-    });
-
-    // Clear execution tracker if it exists
-    this.cleanupTasks.push(async () => {
-      // This would be implemented in the framework if it had an execution tracker
-      // For now, we'll just ensure any pending operations are cleaned up
+      // The StepContextManager maintains context in memory which will be garbage collected
+      // Future cleanup logic for step context can be added here
     });
   }
 
@@ -166,6 +158,46 @@ export class ServiceContainer implements IServiceContainer {
    */
   isDisposed(): boolean {
     return this.disposed;
+  }
+
+  /**
+   * Get the underlying AWS S3 client (for advanced usage)
+   * @internal
+   */
+  getS3Client(): S3Client {
+    return this.s3Client;
+  }
+
+  /**
+   * Get the underlying AWS SQS client (for advanced usage)
+   * @internal
+   */
+  getSQSClient(): SQSClient {
+    return this.sqsClient;
+  }
+
+  /**
+   * Get the underlying AWS Lambda client (for advanced usage)
+   * @internal
+   */
+  getLambdaClient(): LambdaClient {
+    return this.lambdaClient;
+  }
+
+  /**
+   * Get the underlying AWS Step Functions client (for advanced usage)
+   * @internal
+   */
+  getSFNClient(): SFNClient {
+    return this.sfnClient;
+  }
+
+  /**
+   * Get the underlying AWS CloudWatch Logs client (for advanced usage)
+   * @internal
+   */
+  getCloudWatchLogsClient(): CloudWatchLogsClient {
+    return this.cloudWatchLogsClient;
   }
 
   /**
