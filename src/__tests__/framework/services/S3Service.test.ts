@@ -21,11 +21,15 @@ describe('S3Service', () => {
   });
 
   describe('findBucket', () => {
-    it('should call ListBuckets command', async () => {
+    it('should find existing bucket successfully', async () => {
       s3Mock.on(ListBucketsCommand).resolves({
         Buckets: [
           {
             Name: 'test-bucket',
+            CreationDate: new Date(),
+          },
+          {
+            Name: 'another-bucket',
             CreationDate: new Date(),
           },
         ],
@@ -34,20 +38,61 @@ describe('S3Service', () => {
       await expect(service.findBucket('test-bucket')).resolves.not.toThrow();
     });
 
-    it('should handle empty bucket list', async () => {
+    it('should throw error when bucket does not exist', async () => {
+      s3Mock.on(ListBucketsCommand).resolves({
+        Buckets: [
+          {
+            Name: 'other-bucket',
+            CreationDate: new Date(),
+          },
+        ],
+      });
+
+      await expect(service.findBucket('non-existent-bucket')).rejects.toThrow(
+        'Bucket non-existent-bucket not found'
+      );
+    });
+
+    it('should throw error when bucket list is empty', async () => {
       s3Mock.on(ListBucketsCommand).resolves({
         Buckets: [],
       });
 
-      // Note: Current implementation doesn't validate if bucket exists
-      // It just checks if ListBuckets succeeds
-      await expect(service.findBucket('non-existent')).resolves.not.toThrow();
+      await expect(service.findBucket('test-bucket')).rejects.toThrow(
+        'Bucket test-bucket not found'
+      );
+    });
+
+    it('should throw error when bucket list is undefined', async () => {
+      s3Mock.on(ListBucketsCommand).resolves({});
+
+      await expect(service.findBucket('test-bucket')).rejects.toThrow(
+        'Bucket test-bucket not found'
+      );
     });
 
     it('should handle AWS SDK errors', async () => {
-      s3Mock.on(ListBucketsCommand).rejects(new Error('AWS error'));
+      s3Mock.on(ListBucketsCommand).rejects(new Error('AWS access denied'));
 
-      await expect(service.findBucket('test-bucket')).rejects.toThrow();
+      await expect(service.findBucket('test-bucket')).rejects.toThrow(
+        'AWS access denied'
+      );
+    });
+
+    it('should handle case-sensitive bucket names', async () => {
+      s3Mock.on(ListBucketsCommand).resolves({
+        Buckets: [
+          {
+            Name: 'Test-Bucket',
+            CreationDate: new Date(),
+          },
+        ],
+      });
+
+      await expect(service.findBucket('test-bucket')).rejects.toThrow(
+        'Bucket test-bucket not found'
+      );
+      await expect(service.findBucket('Test-Bucket')).resolves.not.toThrow();
     });
   });
 
@@ -97,8 +142,10 @@ describe('S3Service', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false when file does not exist', async () => {
-      s3Mock.on(HeadObjectCommand).rejects(new Error('NoSuchKey'));
+    it('should return false when file does not exist (NoSuchKey)', async () => {
+      const noSuchKeyError = new Error('The specified key does not exist.');
+      (noSuchKeyError as any).name = 'NoSuchKey';
+      s3Mock.on(HeadObjectCommand).rejects(noSuchKeyError);
 
       const result = await service.checkFileExists(
         'test-bucket',
@@ -108,12 +155,37 @@ describe('S3Service', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false on other errors', async () => {
-      s3Mock.on(HeadObjectCommand).rejects(new Error('Access denied'));
+    it('should return false when file does not exist (NotFound)', async () => {
+      const notFoundError = new Error('Not Found');
+      (notFoundError as any).name = 'NotFound';
+      s3Mock.on(HeadObjectCommand).rejects(notFoundError);
 
-      const result = await service.checkFileExists('test-bucket', 'test.txt');
+      const result = await service.checkFileExists(
+        'test-bucket',
+        'missing.txt'
+      );
 
       expect(result).toBe(false);
+    });
+
+    it('should throw error for access denied', async () => {
+      const accessError = new Error('Access denied');
+      (accessError as any).name = 'AccessDenied';
+      s3Mock.on(HeadObjectCommand).rejects(accessError);
+
+      await expect(
+        service.checkFileExists('test-bucket', 'test.txt')
+      ).rejects.toThrow('Access denied');
+    });
+
+    it('should throw error for bucket not found', async () => {
+      const bucketError = new Error('The specified bucket does not exist');
+      (bucketError as any).name = 'NoSuchBucket';
+      s3Mock.on(HeadObjectCommand).rejects(bucketError);
+
+      await expect(
+        service.checkFileExists('nonexistent-bucket', 'test.txt')
+      ).rejects.toThrow('The specified bucket does not exist');
     });
 
     it('should handle different bucket and file combinations', async () => {
@@ -124,6 +196,16 @@ describe('S3Service', () => {
 
       expect(result1).toBe(true);
       expect(result2).toBe(true);
+    });
+
+    it('should throw error for unknown errors', async () => {
+      const unknownError = new Error('Unknown AWS error');
+      (unknownError as any).name = 'UnknownError';
+      s3Mock.on(HeadObjectCommand).rejects(unknownError);
+
+      await expect(
+        service.checkFileExists('test-bucket', 'test.txt')
+      ).rejects.toThrow('Unknown AWS error');
     });
   });
 });
