@@ -80,17 +80,18 @@ export interface AWSTestingFrameworkConfig {
 }
 
 export class ConfigManager {
-  private static instance: ConfigManager;
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Used in singleton pattern
+  private static _instance: ConfigManager | undefined;
   private config: AWSTestingFrameworkConfig | null = null;
   private configPath: string | null = null;
 
   private constructor() {}
 
   public static getInstance(): ConfigManager {
-    if (!ConfigManager.instance) {
-      ConfigManager.instance = new ConfigManager();
+    if (!ConfigManager._instance) {
+      ConfigManager._instance = new ConfigManager();
     }
-    return ConfigManager.instance;
+    return ConfigManager._instance;
   }
 
   /**
