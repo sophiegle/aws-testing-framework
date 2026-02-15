@@ -12,8 +12,16 @@ let stepFactory: StepDefinitionFactory | null = null;
  * This should be called before any step definitions are used
  */
 export function initializeFramework(config?: FrameworkConfig): void {
+  // If already initialized with the same config, don't reinitialize
+  if (globalContainer && !config) {
+    return;
+  }
+
+  // Dispose of existing container if present
   if (globalContainer) {
-    globalContainer.dispose();
+    globalContainer.dispose().catch(() => {
+      // Silently handle disposal errors to prevent cascading issues
+    });
   }
 
   globalContainer = new ServiceContainer(config);
@@ -28,9 +36,11 @@ export function initializeFramework(config?: FrameworkConfig): void {
  */
 export function getContainer(): ServiceContainer {
   if (!globalContainer) {
-    throw new Error(
-      'Framework not initialized. Call initializeFramework() first.'
-    );
+    // Lazy initialization for backward compatibility
+    initializeFramework();
+  }
+  if (!globalContainer) {
+    throw new Error('Framework initialization failed');
   }
   return globalContainer;
 }
@@ -40,9 +50,11 @@ export function getContainer(): ServiceContainer {
  */
 export function getStepFactory(): StepDefinitionFactory {
   if (!stepFactory) {
-    throw new Error(
-      'Framework not initialized. Call initializeFramework() first.'
-    );
+    // Lazy initialization for backward compatibility
+    initializeFramework();
+  }
+  if (!stepFactory) {
+    throw new Error('Framework initialization failed');
   }
   return stepFactory;
 }
@@ -52,9 +64,14 @@ export function getStepFactory(): StepDefinitionFactory {
  */
 export async function disposeFramework(): Promise<void> {
   if (globalContainer) {
-    await globalContainer.dispose();
-    globalContainer = null;
-    stepFactory = null;
+    try {
+      await globalContainer.dispose();
+    } catch {
+      // Silently handle disposal errors to prevent cascading issues
+    } finally {
+      globalContainer = null;
+      stepFactory = null;
+    }
   }
 }
 
@@ -92,17 +109,28 @@ function convertConfigToFrameworkConfig(
   };
 }
 
-// Auto-initialize framework when module is loaded for Cucumber
-// This ensures steps are registered before Cucumber parses feature files
-if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
-  // Auto-load config from aws-testing-framework.config.json if it exists
-  try {
-    const configManager = ConfigManager.getInstance();
-    const configFile = configManager.autoDetectConfig();
-    const frameworkConfig = convertConfigToFrameworkConfig(configFile);
-    initializeFramework(frameworkConfig);
-  } catch {
-    // If config loading fails, use defaults
-    initializeFramework();
+/**
+ * Auto-initialize framework when explicitly requested
+ * Call this function to enable auto-initialization for standalone usage
+ */
+export function enableAutoInitialization(): void {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+    // Auto-load config from aws-testing-framework.config.json if it exists
+    try {
+      const configManager = ConfigManager.getInstance();
+      const configFile = configManager.autoDetectConfig();
+      const frameworkConfig = convertConfigToFrameworkConfig(configFile);
+      initializeFramework(frameworkConfig);
+    } catch {
+      // If config loading fails, use defaults
+      initializeFramework();
+    }
   }
+}
+
+/**
+ * Check if the framework has been initialized
+ */
+export function isFrameworkInitialized(): boolean {
+  return globalContainer !== null;
 }
