@@ -1,0 +1,64 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'sophiegle'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            You are reviewing a pull request for the AWS Testing Framework, a TypeScript-based BDD
+            framework for testing AWS serverless architectures. It uses Cucumber.js + Jest for testing
+            and Biome for linting/formatting.
+
+            Please review the PR diff and provide feedback focusing on:
+
+            1. **Code Quality**: Adherence to the project's TypeScript and Biome standards:
+               - 2-space indentation, single quotes, semicolons
+               - 80-character line width
+               - Strict TypeScript: no unused variables, no implicit any
+               - No non-null assertions, no parameter reassignment
+               - Organized imports, ES5 trailing commas
+
+            2. **Bugs**: Logic errors, incorrect assumptions, edge cases, off-by-one errors,
+               unhandled promise rejections, missing null/undefined checks.
+
+            3. **Security**: Hardcoded secrets, injection vulnerabilities, improper error handling
+               that leaks sensitive information, unsafe AWS credential handling.
+
+            4. **Performance**: Unnecessary allocations, redundant AWS API calls, missing
+               pagination handling, inefficient loops or data transformations.
+
+            5. **Testing**: Whether new code has adequate unit test coverage using Jest and
+               aws-sdk-client-mock, and whether BDD step definitions follow existing patterns.
+
+            Reference the project's CLAUDE.md file for full development standards and conventions.
+
+            Be constructive and specific. Use inline comments on the exact lines where issues exist.
+            For each issue, explain the problem and suggest a concrete fix.
+            Only comment on things that genuinely matter -- do not leave nitpick comments about
+            subjective style preferences that are not enforced by the project's Biome configuration.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
